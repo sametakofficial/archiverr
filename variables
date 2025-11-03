@@ -360,9 +360,3 @@ globals: { allVideoQualities: [2160,1080,720,480] }
 * **Print**: `{count} {sizeBytes} {sizeH} {durationSec} {durationH} {minSizeBytes} {maxSizeBytes} {avgSizeBytes} {minDurationSec} {maxDurationSec} {avgDurationSec} {minYear} {maxYear} {minBitrateBps} {maxBitrateBps} {avgBitrateBps} {samplePath} {pathsCsv} {<loopVar>}`
 
 > Bu wiki, YAML motoru implementasyonu için **alan sözleşmesi**dir; TMDb/ffprobe JSON’larının **tam ağaçları**na `$…` ve `$ffprobe.…` ile erişim *zorunlu* kabul edilir. Normalize alanlar + türevler, hızlı filtreleme ve isimlendirme içindir.
-
-
-
-
-
-eval 'grep -n "ctx = " /home/samet/Workspace/archiverr/src/archiverr/core/query_engine/variables.py | head -20'
