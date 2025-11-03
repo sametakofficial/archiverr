@@ -1,6 +1,0 @@
-include README.md
-include README_YML_ENGINE.md
-include LICENSE
-include requirements.txt
-recursive-include config *.yml
-recursive-include docs *.md
