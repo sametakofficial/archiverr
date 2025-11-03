@@ -1,0 +1,64 @@
+# Query Template: Sadece Rapor (Save Yok)
+# Koleksiyonun genel istatistiklerini gösterir
+
+# Tüm videolar - genel istatistik
+- name: "Genel Video İstatistikleri"
+  where: "videoCodec"  # Video codec'i olan tüm dosyalar
+  print: |
+    ╔══════════════════════════════════════════════════════════╗
+    ║            KOLEKS İYON İSTATİSTİKLERİ                    ║
+    ╚══════════════════════════════════════════════════════════╝
+    
+    📊 Toplam Dosya: {count}
+    💾 Toplam Boyut: {sizeH}
+    ⏱️  Toplam Süre: {durationH}
+    
+    📏 Boyut Aralığı:
+       Min: {minSizeBytes} bayt
+       Max: {maxSizeBytes} bayt
+       Ort: {avgSizeBytes} bayt
+    
+    🎞️  Bitrate:
+       Min: {minBitrateBps} bps
+       Max: {maxBitrateBps} bps
+       Ort: {avgBitrateBps} bps
+
+# Codec bazlı dağılım
+- name: "H.264 Videolar"
+  where: "videoCodec == 'h264'"
+  print: "  📹 H.264: {count} dosya ({sizeH})"
+
+- name: "HEVC/H.265 Videolar"
+  where: "videoCodec == 'hevc'"
+  print: "  📹 HEVC: {count} dosya ({sizeH})"
+
+- name: "AV1 Videolar"
+  where: "videoCodec == 'av1'"
+  print: "  📹 AV1: {count} dosya ({sizeH})"
+
+# Resolution dağılımı
+- name: "4K Videolar"
+  where: "videoHeight >= 2160"
+  print: "  📐 4K: {count} dosya"
+
+- name: "1080p Videolar"
+  where: "videoHeight == 1080"
+  print: "  📐 1080p: {count} dosya"
+
+- name: "720p Videolar"
+  where: "videoHeight == 720"
+  print: "  📐 720p: {count} dosya"
+
+# Audio track sayısı
+- name: "Çoklu Ses Tracki"
+  where: "audioCount > 1"
+  print: "  🔊 Çoklu Ses: {count} dosya (ort. {avgDurationSec:.0f}s)"
+
+- name: "Tek Ses Tracki"
+  where: "audioCount == 1"
+  print: "  🔊 Tek Ses: {count} dosya"
+
+# HDR içerik
+- name: "HDR İçerik"
+  where: "videoHdrFormat"
+  print: "  🌈 HDR: {count} dosya"

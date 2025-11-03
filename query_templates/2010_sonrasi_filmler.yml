@@ -1,0 +1,25 @@
+# Query Template: 2010 Sonrası Filmler
+# Sadece rapor yapar, dosya taşımaz
+
+name: "2010 Sonrası Filmler - Detaylı Rapor"
+
+# 2010 ve sonrası çıkan filmleri filtrele
+where: "movieYear and movieYear >= 2010"
+
+# Sadece print (save yok)
+print: |
+  ═══════════════════════════════════════════════════════════
+  📅 2010+ Filmler Raporu
+  ═══════════════════════════════════════════════════════════
+  Toplam Film: {count} adet
+  Toplam Boyut: {sizeH}
+  Ortalama Boyut: {avgSizeBytes} bayt
+  Toplam Süre: {durationH}
+  
+  En Küçük: {minSizeBytes} bayt
+  En Büyük: {maxSizeBytes} bayt
+  
+  Yıl Aralığı: {minYear} - {maxYear}
+  
+  Örnek Dosya: {samplePath}
+  ═══════════════════════════════════════════════════════════

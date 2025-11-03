@@ -1,0 +1,20 @@
+- name: "8bit Single Audio - Quality Based"
+  loop:
+    var: q
+    in: [2160, 1440, 1080, 720, 576, 480]
+  where: "videoBitDepth == 8 and audioCount == 1 and videoHeight == q"
+  print: "8-bit • {q}p => Count: {count} | Size: {sizeH}"
+  save: "/archive/8bit_videos/{q}p/"
+
+- name: "2010+ Movies Report"
+  where: "movieYear and movieYear >= 2010"
+  print: "2010+ Movies: {count} files | Total: {sizeH} | Avg bitrate: {avgBitrateBps} bps"
+
+- name: "HDR Content"
+  where: "videoHDR and videoHDR != 'SDR'"
+  print: "HDR Content: {count} files | Types: HDR10, DolbyVision, etc."
+  save: "/media/HDR/"
+
+- name: "Multi-Audio Tracks"
+  where: "audioCount >= 2"
+  print: "Multi-Audio: {count} files | Avg audio tracks: {audioCount}"

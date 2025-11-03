@@ -1,0 +1,14 @@
+# Query Template: Türkçe Filmler
+# Türkçe ses tracki olan veya Türk yapımı filmleri organize eder
+
+# Türkçe ses tracki olanlar
+- name: "Türkçe Sesli Filmler"
+  where: "audioCount > 0 and tmdb and tmdb.original_language == 'tr'"
+  print: "🇹🇷 Türkçe Film: {count} adet | {sizeH}"
+  save: "/media/Movies-Turkish/$name ($movieYear)"
+
+# Türk yapımı (TMDb production_countries'ten)
+- name: "Türk Yapımı Filmler (Prodüksiyon)"
+  where: "tmdb and tmdb.production_countries"
+  print: "🎬 Türk Prodüksiyonu: {count} adet"
+  save: "/media/Movies-Turkish-Production/$name ($movieYear)"

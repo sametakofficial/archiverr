@@ -1,0 +1,44 @@
+print: |
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 İşlem Özeti
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Toplam Dosya    : {total}
+  Başarılı        : {success}
+  Hata            : {failed}
+  Atlandı         : {skipped}
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱️  Süre Bilgisi
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Toplam Süre     : {total_time:.2f}s
+  Ortalama/Dosya  : {avg_time:.2f}s
+  En Hızlı        : {min_time:.2f}s
+  En Yavaş        : {max_time:.2f}s
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📺 Son Öğe (TV/Film)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Show            : {showName}
+  Original        : {originalShowName}
+  Season/Episode  : S{seasonNumber:02d}E{episodeNumber:02d}
+  Episode         : {episodeName}
+  Episode Air     : {episodeAirDate}
+  Episode Runtime : {episodeRuntime} min
+  Episode Rating  : {episodeVoteAverage}/10 ({episodeVoteCount} votes)
+  First Air       : {firstAirDate} ({firstAirYear})
+  Rating          : {voteAverage}/10 ({voteCount} votes)
+  Network         : {networkName}
+  Genre           : {genreName}
+  Seasons/Episodes: {numberOfSeasons}/{numberOfEpisodes}
+  Type            : {showType}
+  In Production   : {inProduction}
+  API             : {apiSource}
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎬 Extras (if fetched)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Cast            : {cast.1.name}, {cast.2.name}, {cast.3.name} ({castCount} total)
+  Crew            : Director: {director} ({crewCount} total crew)
+  Images          : {postersCount} posters / {backdropsCount} backdrops
+  Videos          : {trailers.1.name} ({trailersCount} trailers / {teasersCount} teasers)
+  Keywords        : {keywords.1.name}, {keywords.2.name}, {keywords.3.name} ({keywordsCount} total)
+  IMDB ID         : {imdbId}
+  TVDB ID         : {tvdbId}
+  Content Rating  : {contentRatingUS}

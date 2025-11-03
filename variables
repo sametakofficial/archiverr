@@ -1,0 +1,368 @@
+# YAML Değişken Referansı (Wiki)
+
+**Sözdizimi & Kapsam**
+
+* **Pattern içinde** değişken: `$degiskenAdi` (camelCase).
+* **Query `where` içinde** alan adı: `degiskenAdi` (dolar **yok**).
+* **Query `print` içinde** özel şablon: `{degisken}` (bkz. “Print/Runtime”).
+* **Liste indexleri 1-based**: `$audio.1.language`.
+* **Filtreler** (yalnız `$…` için): `:lower`, `:upper`, `:slug`, `:year`.
+  Örn: `$showName:slug`, `$first_air_date:year`.
+
+---
+
+## GLOBAL / ORTAK
+
+### Yol & Dosya
+
+* `$path` — tam dosya yolu
+* `$dir` — klasör yolu
+* `$fileName` — ad + uzantı
+* `$stem` — ad (uzantısız)
+* `$ext` — uzantı (örn. `.mkv`)
+* `$rootMovies`, `$rootSeries` — koleksiyon kökleri (config’ten)
+* `$relPathFromRoot` — köke göre göreli yol
+
+### Tarih/Zaman
+
+* `$nowIso`, `$nowDate`, `$nowTime` — ISO/gg-aa-yyyy/saat
+* `$todayYear`, `$todayMonth`, `$todayDay` — int
+* `$epochSec` — int
+
+### Kullanıcı Tanımlı (config → `globals`)
+
+* `$globals.xxx` — örn. `$globals.cutYear`, `$globals.allVideoQualities.1`
+
+---
+
+## FFPROBE (Normalize)
+
+> Normalize alanlar *tekil* video akışı üzerinden hesaplanır; ham ağaç için “FFPROBE (Ham)” bölümüne bak.
+
+### Video (ana akış)
+
+* `$video.codec` — `h264|hevc|av1|…`
+* `$video.width`, `$video.height` — int
+* `$video.resolution` — `"2160p"|"1440p"|"1080p"|…`
+* `$video.pixFmt` — `yuv420p|yuv420p10le|…`
+* `$video.bitRate` — int (bps, varsa)
+* `$video.fps` — string (örn. `"24000/1001"`)
+* `$video.fpsFloat` — float (örn. `23.976`)
+* `$video.level` — int (örn. 51)
+* `$video.profile` — string (örn. Main10)
+* `$video.sar`, `$video.dar` — `"1:1"`, `"16:9"`
+* `$video.fieldOrder` — `progressive|tt|bb|…`
+* `$video.colorPrimaries`, `$video.colorTransfer`, `$video.colorSpace` — HDR tespiti için
+* `$video.hdrFormat` — `"HDR10"|"HDR10+"|"HLG"|"DolbyVision"|""` *(heuristic)*
+
+### Derived (Video)
+
+* `$videoBitDepth` — 8/10/12/16 (bps veya `pix_fmt`’ten)
+* `$videoQuality` — `"2160p"|"1080p"|…` (yükseklikten)
+
+### Audio
+
+* `$audioCount` — toplam ses akışı
+* `$audio.N.codec` — `aac|ac3|eac3|dts|truehd|…`
+* `$audio.N.language` — `tur|eng|…` (tags)
+* `$audio.N.channels` — int (örn. 6)
+* `$audio.N.layout` — `5.1|stereo|…`
+* `$audio.N.sampleRate` — int (Hz)
+* `$audio.N.bitRate` — int (bps, varsa)
+* `$audio.defaultIndex` — 1-based varsayılan parça (disposition:default=1)
+
+### Subtitle
+
+* `$subtitleCount` — toplam altyazı akışı
+* `$subtitle.N.codec` — `subrip|pgs|hdmv_pgs_subtitle|ass|…`
+* `$subtitle.N.language` — `tur|eng|…`
+* `$subtitle.N.forced` — bool (disposition.forced=1)
+
+### Konteyner/Format
+
+* `$container.format` — `"matroska,webm"|…`
+* `$container.longName` — long format adı
+* `$sizeInt` — int, dosya baytı (`format.size`)
+* `$sizeH` — insan okunur boyut (`MiB/GiB`…)
+* `$durationSec` — float saniye (`format.duration`)
+* `$durationH` — `"HH:MM:SS"`
+* `$container.bitRate` — int (bps)
+* `$totalBitrateBps` — int (format.bit_rate yoksa `size*8/duration`)
+* `$container.tags.KEY` — format tag erişimi (örn. `encoder`)
+
+---
+
+## FFPROBE (Ham Ağaç)
+
+> Tam JSON aynen erişilebilir: `$ffprobe.…`
+
+* `$ffprobe.format.filename`
+* `$ffprobe.format.size`, `$ffprobe.format.duration`, `$ffprobe.format.bit_rate`
+* `$ffprobe.format.tags.encoder`, `creation_time`, …
+* `$ffprobe.streams.N.codec_type` — `video|audio|subtitle|…`
+* `$ffprobe.streams.N.codec_name`, `codec_long_name`
+* `$ffprobe.streams.N.width`, `height`, `pix_fmt`, `level`, `profile`
+* `$ffprobe.streams.N.r_frame_rate`, `avg_frame_rate`, `time_base`
+* `$ffprobe.streams.N.bits_per_raw_sample`, `bit_rate`
+* `$ffprobe.streams.N.channels`, `channel_layout`, `sample_rate`
+* `$ffprobe.streams.N.side_data_list` — HDR/DV metadata
+* `$ffprobe.streams.N.disposition.default|forced|…`
+* `$ffprobe.streams.N.tags.language|title|…`
+
+> **Tags-tabanlı sayaçlar** (mkvmerge istatistikleri):
+> `NUMBER_OF_FRAMES-eng`, `BPS-eng`, `DURATION-eng`, `NUMBER_OF_BYTES-eng` vb. → `$ffprobe.streams.N.tags.NUMBER_OF_FRAMES-eng`
+
+---
+
+## TMDB (Kısa Alias)
+
+### Film
+
+* `$name` — `title` / fallback `original_title`
+* `$movieAirDate` — `release_date`
+* `$movieYear` — `$release_date:year`
+
+### Dizi/Bölüm
+
+* `$showName` — `name` / fallback `original_name`
+* `$firstAirDate` — `first_air_date`
+* `$episodeName` — `episode.name` *(bölüm yüklenmişse)*
+* `$seasonNumber`, `$episodeNumber` — çözümlenen değerler
+
+---
+
+## TMDB (Ham Ağaç)
+
+> Tüm TMDb JSON ağaçları `$…` altında.
+
+### Ortak
+
+* `$id`
+* `$poster_path`, `$backdrop_path`
+* `$overview`, `$status`
+* `$original_language`
+* `$popularity`, `$vote_average`, `$vote_count`
+* `$homepage`
+
+### Film (Movie Details)
+
+* `$title`, `$original_title`
+* `$release_date`, `$runtime`
+* `$genres.N.id|name`
+* `$production_companies.N.id|name|origin_country`
+* `$production_countries.N.iso_3166_1|name`
+* `$spoken_languages.N.iso_639_1|name`
+* `$imdb_id`
+* `$budget`, `$revenue`
+* `$belongs_to_collection.id|name|poster_path|backdrop_path`
+
+### Dizi (TV Details)
+
+* `$name`, `$original_name`
+* `$first_air_date`, `$last_air_date`
+* `$in_production`
+* `$number_of_seasons`, `$number_of_episodes`
+* `$episode_run_time.N`
+* `$genres.N.name`
+* `$networks.N.id|name|logo_path|origin_country`
+* `$seasons.N.season_number|episode_count|air_date|name|poster_path`
+* `$type` — `"Scripted"|…`
+
+### Bölüm (TV Episode Details)
+
+* `$episode.id`
+* `$episode.name`, `$episode.air_date`
+* `$episode.season_number`, `$episode.episode_number`
+* `$episode.runtime`
+* `$episode.still_path`
+* `$episode.vote_average`, `$episode.vote_count`
+* `$episode.overview`
+
+### Append (Önerilir)
+
+* `$credits.cast.N.id|name|character|order|profile_path`
+* `$credits.crew.N.id|name|job|department`
+* `$aggregate_credits.cast.N.roles.N.character` *(TV)*
+* `$external_ids.imdb_id|tvdb_id|facebook_id|instagram_id|twitter_id`
+* `$content_ratings.results.N.iso_3166_1|rating` *(TV)*
+* `$release_dates.results.N.iso_3166_1|release_dates.N.certification` *(Film)*
+* `$images.posters/backdrops/logos.N.file_path|width|height|iso_639_1`
+
+### Discover/Arama Alanları (kayıtlıysa)
+
+* `$belongs_to_collection.name`
+* `$origin_country.N`
+* `$production_companies.N.name`
+* `$keywords.keywords.N.name` *(film)* / `$keywords.results.N.name` *(TV)*
+
+---
+
+## PATTERN KULLANIMI ($…)
+
+**Örnekler (film)**
+
+* `$name ($movieYear)/$name ($movieYear) [$video.resolution][$video.codec][$audio.1.language:upper]`
+* `$name:slug-$movieYear[$video.codec]-$video.resolution`
+
+**Örnekler (dizi)**
+
+* `$showName ($first_air_date:year)/Season $seasonNumber/$showName - S$seasonNumberE$episodeNumber - $episode.name`
+
+**Gelişmiş**
+
+* `$genres.1.name:slug`
+* `$aggregate_credits.cast.1.name:slug`
+* `$ffprobe.streams.1.tags.language:upper`
+
+---
+
+## QUERY `where` ALANLARI (doğrudan isim)
+
+> `$` **yok**; normalize alan adları ve ham ağaç kökleri:
+> `videoCodec`, `videoWidth`, `videoHeight`, `videoBitDepth`, `audioCount`, `subtitleCount`, `sizeInt`, `durationSec`, `totalBitrateBps`, `movieYear`, `tmdb`, `ffprobe`, `container`, …
+
+**Örnek**
+
+* `where: "videoBitDepth == 10 and audioCount >= 2"`
+* `where: "movieYear and movieYear >= 2010"`
+* `where: "tmdb and vote_average >= 7.5"`
+* `where: "ffprobe and ffprobe.format.format_name == 'matroska,webm'"`
+
+---
+
+## QUERY `print` / RUNTIME DEĞİŞKENLERİ (`{…}`)
+
+### Temel
+
+* `{count}` — eşleşen dosya sayısı
+* `{sizeBytes}` — toplam bayt (int)
+* `{sizeH}` — toplam okunur boyut
+* `{durationSec}` — toplam süre (float, saniye)
+* `{durationH}` — toplam süre `"HH:MM:SS"`
+
+### İstatistik (toplu)
+
+* `{minSizeBytes}`, `{maxSizeBytes}`, `{avgSizeBytes}`, `{medianSizeBytes}`
+* `{minDurationSec}`, `{maxDurationSec}`, `{avgDurationSec}`
+* `{minYear}`, `{maxYear}` *(TMDb yıl varsa)*
+* `{minBitrateBps}`, `{maxBitrateBps}`, `{avgBitrateBps}`
+
+### Loop
+
+* `{<loopVar>}` — örn. `{q}`, `{quality}`, `{yearBucket}`
+
+### Diğer
+
+* `{matched}` — eşleşen *adet* (alias `{count}`)
+* `{samplePath}` — ilk eşleşenin yolu (örnek)
+* `{pathsCsv}` — eşleşen yollar CSV (uzun olabilir)
+
+> **Not:** `print` şablonunda **yalnız süslü** değişkenler kullanılır; `$` **kullanılmaz**.
+
+**Örnek**
+
+* `print: "{q}p ⇒ {count} | {sizeH} | avg {avgBitrateBps} bps"`
+
+---
+
+## QUERY `save` (çıktı eylemi)
+
+* `save: "/hedef/klasor/{q}p/"` — `where`’e uyan dosyaları **taşı**/**hardlink** (global ayara göre).
+* Yer tutucu: **loop değişkenleri** (`{q}`, `{yearBucket}` vb.).
+* Global anahtar: `use_hardlinks: true|false` (config).
+
+---
+
+## EK TÜREV ALANLAR / KOVA ANAHTARLARI (önerilen)
+
+> Sıralama/bucket için yararlı (motor tarafında üretilebilir):
+
+* **Boyut Kovaları**
+
+  * `$sizeGiB` — float (GiB)
+  * `$sizeBucket` — `"0-1 GiB"|"1-5 GiB"|"5-10 GiB"|">10 GiB"`
+* **Bitrate Kovaları**
+
+  * `$totalBitrateMbps` — float (`totalBitrateBps/1e6`)
+  * `$bitrateBucket` — `"<2"|"2-5"|"5-10"|">10"`
+* **Yıl Kovaları**
+
+  * `$yearBucket` — `"<=2000"|"2001-2010"|"2011-2020"|">=2021"`
+* **FPS & HDR**
+
+  * `$video.fpsBucket` — `"<=24"|"25-30"|">30"`
+  * `$hdrBucket` — `""|"HDR10"|"HDR10+"|"HLG"|"DolbyVision"`
+
+---
+
+## KISA ÖRNEKLER (HEPSİ)
+
+**8-bit’i ayır + rapor**
+
+```yaml
+- name: save8bit
+  where: "videoBitDepth == 8"
+  print: "8-bit => {count} | {sizeH}"
+  save: "/archive/8bit/"
+```
+
+**Kalite kovaları**
+
+```yaml
+globals: { allVideoQualities: [2160,1080,720,480] }
+- name: byQuality
+  loop: { var: q, in: globals.allVideoQualities }
+  where: "videoHeight == q"
+  print: "{q}p => {count} | {sizeH}"
+  save: "/archive/quality/{q}p/"
+```
+
+**Yıl aralığı**
+
+```yaml
+- name: y2010to2014
+  where: "movieYear and (movieYear >= 2010 and movieYear <= 2014)"
+  print: "2010-2014 => {count} | {sizeH}"
+  save: "/archive/movies/2010_2014/"
+```
+
+**Ağırlık aralığı**
+
+```yaml
+- name: size_5_10_gib
+  where: "sizeInt >= 5*1024*1024*1024 and sizeInt < 10*1024*1024*1024"
+  print: "5–10 GiB => {count} | {sizeH}"
+  save: "/archive/size/5_10_GiB/"
+```
+
+**TMDb puan filtresi**
+
+```yaml
+- name: vote_gte_75
+  where: "tmdb and vote_average >= 7.5"
+  print: "★7.5+ => {count} | {sizeH}"
+```
+
+**TR birincil ses**
+
+```yaml
+- name: tr_primary_audio
+  where: "ffprobe and any(s.get('codec_type')=='audio' and ((s.get('tags') or {}).get('language')=='tur') for s in ffprobe['streams'])"
+  print: "TR-audio => {count} | {sizeH}"
+```
+
+---
+
+## ÖZET AD ALANI HARİTASI
+
+* **Pattern ($…)**: `$path $dir $fileName $stem $ext $name $movieYear $showName $episodeName $seasonNumber $episodeNumber $firstAirDate $video.* $audio.* $subtitleCount $sizeInt $sizeH $durationSec $durationH $totalBitrateBps $container.* $… $ffprobe.… $globals.…`
+* **Where**: `videoCodec videoWidth videoHeight videoBitDepth audioCount subtitleCount sizeInt durationSec totalBitrateBps movieYear tmdb ffprobe container …`
+* **Print**: `{count} {sizeBytes} {sizeH} {durationSec} {durationH} {minSizeBytes} {maxSizeBytes} {avgSizeBytes} {minDurationSec} {maxDurationSec} {avgDurationSec} {minYear} {maxYear} {minBitrateBps} {maxBitrateBps} {avgBitrateBps} {samplePath} {pathsCsv} {<loopVar>}`
+
+> Bu wiki, YAML motoru implementasyonu için **alan sözleşmesi**dir; TMDb/ffprobe JSON’larının **tam ağaçları**na `$…` ve `$ffprobe.…` ile erişim *zorunlu* kabul edilir. Normalize alanlar + türevler, hızlı filtreleme ve isimlendirme içindir.
+
+
+
+
+
+eval 'grep -n "ctx = " /home/samet/Workspace/archiverr/src/archiverr/core/query_engine/variables.py | head -20'

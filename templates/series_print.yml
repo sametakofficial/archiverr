@@ -1,0 +1,16 @@
+print: |
+  ✓ SHOW: {showName} ({firstAirYear})
+    Original: {originalShowName}
+    S{seasonNumber:02d}E{episodeNumber:02d} - {episodeName}
+    Episode Air: {episodeAirDate}
+    Overview: {episodeOverview}
+    Rating: {voteAverage}/10 ({voteCount} votes)
+    Network: {networkName}
+    Genre: {genreName}
+    Seasons: {numberOfSeasons} | Episodes: {numberOfEpisodes}
+    Type: {showType} | In Production: {inProduction}
+    API: [{apiSource}] | Time: {took:.2f}s
+    Episode Runtime: {episodeRuntime} min
+    Episode Rating: {episodeVoteAverage}/10 ({episodeVoteCount} votes)
+    
+    [Extras] Cast: {cast.1.name}, {cast.2.name}, {cast.3.name} ({castCount}) | Director: {director} | Posters: {postersCount} | Trailers: {trailers.1.name} | Keywords: {keywords.1.name}, {keywords.2.name}

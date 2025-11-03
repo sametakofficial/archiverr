@@ -1,0 +1,15 @@
+# Query Template: Kalite Bazlı Organizasyon
+# Resolution'a göre filmleri farklı klasörlere ayırır
+
+name: "Kalite Bazlı Film Organizasyonu"
+
+# Loop: Tüm kaliteler için çalıştır
+loop:
+  var: q
+  in: [2160, 1440, 1080, 720, 576, 480]
+
+where: "videoHeight == q"
+
+print: "{q}p Filmler: {count} adet | Toplam: {sizeH} | Ort. Bitrate: {avgBitrateBps} bps"
+
+save: "/media/Movies-Quality/{q}p/{title} ({year})"

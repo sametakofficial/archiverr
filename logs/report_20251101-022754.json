@@ -1,0 +1,1438 @@
+{
+  "session_id": "20251101-022754",
+  "timestamp": "2025-11-01T02:27:58.496+03:00",
+  "stats": {
+    "success": 0,
+    "failed": 16,
+    "total": 16
+  },
+  "failed_files": [
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E02.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E03.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E04.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E05.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E06.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E07.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E08.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E09.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E10.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E11.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E12.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E13.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E14.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E15.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "file": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E16.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    }
+  ],
+  "operations": [],
+  "debug_logs": [
+    {
+      "timestamp": "2025-11-01T02:27:54.330+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.331+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 1
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.765+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:54.766+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E02.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E02.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E02.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 2
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E02.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.212+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E03.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E03.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E03.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 3
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E03.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.502+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E04.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E04.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E04.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 4
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E04.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:55.792+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E05.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E05.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E05.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 5
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.191+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.192+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E05.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.192+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.192+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E06.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E06.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E06.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 6
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.495+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.496+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E06.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.496+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.496+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E07.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E07.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E07.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 7
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E07.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:56.935+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E08.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E08.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E08.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 8
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E08.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.239+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E09.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E09.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E09.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 9
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E09.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.399+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E10.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E10.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E10.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 10
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E10.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.550+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E11.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E11.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E11.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 11
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E11.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.702+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E12.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E12.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E12.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 12
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E12.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.856+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:57.857+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E13.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E13.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E13.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 13
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.005+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.006+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E13.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.006+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.006+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.158+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.158+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E14.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E14.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E14.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 14
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E14.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.159+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E15.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E15.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E15.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 15
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E15.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "DEBUG",
+      "component": "api.priority.order",
+      "message": "API priority order for tv",
+      "media_type": "tv",
+      "apis": "tmdb(pri:1), tvdb(pri:2), omdb(pri:3), tvmaze(pri:4)"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.316+03:00",
+      "level": "INFO",
+      "component": "api.attempt",
+      "message": "Trying tmdb (PRIMARY)",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.495+03:00",
+      "level": "INFO",
+      "component": "api.success",
+      "message": "✓ Match found via tmdb",
+      "api": "tmdb",
+      "priority": 1,
+      "label": "PRIMARY",
+      "result": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.495+03:00",
+      "level": "DEBUG",
+      "component": "file.processing",
+      "message": "Processing file via tmdb",
+      "src": "/data/srv/downloads/finished/series/Friends.Box.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG/Friends.S01E16.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "api": "tmdb"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.495+03:00",
+      "level": "INFO",
+      "component": "parse.start",
+      "message": "Starting filename parse",
+      "file": "Friends.S01E16.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.496+03:00",
+      "level": "INFO",
+      "component": "parse.result",
+      "message": "Parsed TV show",
+      "file": "Friends.S01E16.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "show": "Friends",
+      "season": 1,
+      "episode": 16
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.496+03:00",
+      "level": "INFO",
+      "component": "tmdb.search",
+      "message": "Searching TMDb (tv)",
+      "query": "Friends"
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.496+03:00",
+      "level": "INFO",
+      "component": "tmdb.match",
+      "message": "Best match found",
+      "id": 1668,
+      "name": "Friends",
+      "year": "",
+      "score": null
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.496+03:00",
+      "level": "DEBUG",
+      "component": "tmdb.details",
+      "message": "Fetching full details",
+      "id": 1668
+    },
+    {
+      "timestamp": "2025-11-01T02:27:58.496+03:00",
+      "level": "ERROR",
+      "component": "file.error",
+      "message": "Processing failed",
+      "file": "Friends.S01E16.1080p.BLUTV.WEB-DL.[TR-EN].AAC.HEVC-TURG.mkv",
+      "error": "name 'show_full' is not defined"
+    }
+  ]
+}

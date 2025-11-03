@@ -1,0 +1,20 @@
+# Query Template: 8-bit ve 10-bit Filmleri Ayır
+# Bit depth'e göre farklı klasörlere organize eder
+
+# 8-bit videolar
+- name: "8-bit Videolar"
+  where: "videoBitDepth == 8"
+  print: "8-bit: {count} dosya | {sizeH}"
+  save: "/archive/8bit-videos/$name ($movieYear)"
+
+# 10-bit videolar  
+- name: "10-bit Videolar"
+  where: "videoBitDepth == 10"
+  print: "10-bit: {count} dosya | {sizeH}"
+  save: "/archive/10bit-videos/$name ($movieYear)"
+
+# 12-bit videolar (nadir ama olabilir)
+- name: "12-bit Videolar"
+  where: "videoBitDepth >= 12"
+  print: "12-bit+: {count} dosya | {sizeH}"
+  save: "/archive/12bit-videos/$name ($movieYear)"

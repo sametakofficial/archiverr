@@ -1,0 +1,8 @@
+requests
+pyyaml
+regex
+python-dotenv
+sqlalchemy
+fastapi
+uvicorn[standard]
+pydantic
