@@ -2,6 +2,7 @@
   "name": "tmdb",
   "version": "1.0.0",
   "category": "output",
-  "depends_on": ["ffprobe", "renamer"],
+  "class_name": "TMDbPlugin",
+  "depends_on": ["renamer"],
   "expects": ["renamer.parsed"]
 }

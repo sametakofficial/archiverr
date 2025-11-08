@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 from .parser import sanitize_string, parse_show_name, parse_movie_name
+from archiverr.utils.debug import get_debugger
 
 
 class RenamerPlugin:
@@ -14,29 +15,30 @@ class RenamerPlugin:
         self.name = "renamer"
         self.category = "output"
         self.media_type = config.get('media_type', 'auto')
+        self.debugger = get_debugger()
     
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Parse filename and extract metadata.
         
         Args:
-            match_data: Must contain 'scanner' or 'file_reader' with 'input' path
+            match_data: Must contain 'input' with path
             
         Returns:
-            {status, parsed: {show: {...}, movie: {...}}}
+            {status, parsed: {show: {...}, movie: {...}}, category}
         """
         start_time = datetime.now()
-        # Get input path
-        input_path = None
-        if 'scanner' in match_data:
-            input_path = match_data['scanner'].get('input')
-        elif 'file_reader' in match_data:
-            input_path = match_data['file_reader'].get('input')
+        
+        # Get input metadata from match
+        input_metadata = match_data.get('input', {})
+        input_path = input_metadata.get('path')
         
         if not input_path:
             return self._error_result()
         
         filename = Path(input_path).stem
+        
+        self.debugger.debug("renamer", "Parsing filename", filename=filename, mode=self.media_type)
         
         # Parse based on media_type config
         show_match = None
@@ -57,6 +59,18 @@ class RenamerPlugin:
             # Only parse as movie
             movie_match = self._parse_movie(filename)
         
+        # Determine category
+        category = 'unknown'
+        if movie_match and movie_match.get('name'):
+            category = 'movie'
+            self.debugger.info("renamer", "Detected movie", name=movie_match['name'], year=movie_match.get('year'))
+        elif show_match and show_match.get('name'):
+            category = 'show'
+            self.debugger.info("renamer", "Detected show", name=show_match['name'], 
+                             season=show_match.get('season'), episode=show_match.get('episode'))
+        else:
+            self.debugger.warn("renamer", "Could not detect category", filename=filename)
+        
         # Calculate duration
         end_time = datetime.now()
         duration_ms = int((end_time - start_time).total_seconds() * 1000)
@@ -71,7 +85,8 @@ class RenamerPlugin:
             'parsed': {
                 'show': show_match,
                 'movie': movie_match
-            }
+            },
+            'category': category
         }
     
     def _parse_show(self, filename: str) -> Dict[str, Any]:

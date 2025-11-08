@@ -3,6 +3,7 @@ from typing import Dict, Any
 import requests
 from datetime import datetime
 from .extras import TVMazeExtras
+from archiverr.utils.debug import get_debugger
 
 
 class TVMazePlugin:
@@ -12,6 +13,7 @@ class TVMazePlugin:
         self.config = config
         self.name = "tvmaze"
         self.category = "output"
+        self.debugger = get_debugger()
         
         # Initialize extras client
         self.extras_client = TVMazeExtras()
@@ -35,14 +37,19 @@ class TVMazePlugin:
         
         start_time = datetime.now()
         
+        self.debugger.debug("tvmaze", "Starting TVMaze execution")
+        
         # TVMaze only supports TV shows - Check if it's a movie (has year)
         if movie_data and movie_data.get('year'):
+            self.debugger.debug("tvmaze", "Movie detected, not supported")
             return self._not_supported_result("TVMaze only supports TV shows")
         
         if not show_data or not show_data.get('name'):
+            self.debugger.warn("tvmaze", "No show data found")
             return self._empty_result()
         
         show_name = show_data.get('name')
+        self.debugger.debug("tvmaze", "Searching TV show", name=show_name)
         season_number = show_data.get('season')
         episode_number = show_data.get('episode')
         
@@ -70,6 +77,8 @@ class TVMazePlugin:
             
             if shows and len(shows) > 0:
                 show_info = shows[0]['show']
+                show_id = show_info.get('id')
+                self.debugger.info("tvmaze", "TV show found", tvmaze_id=show_id, title=show_info.get('name'))
                 result['show'] = {
                     'name': show_info.get('name'),
                     'tvmaze_id': show_info.get('id'),
@@ -106,34 +115,45 @@ class TVMazePlugin:
                     except Exception:
                         pass
                 
-                # Fetch extras if enabled
+                # Fetch extras - Endpoint-Based System (RAW API responses)
                 show_id = show_info.get('id')
                 episode_id = result.get('episode', {}).get('id')
                 
-                if self.extras_config.get('show_cast') and show_id:
-                    cast = self.extras_client.tv_cast(show_id)
-                    if cast:
-                        result['extras']['cast'] = cast[:10]
+                # Shows Cast Endpoint
+                if self.extras_config.get('shows_cast') and show_id:
+                    data = self.extras_client.shows_cast(show_id)
+                    if data:
+                        result['extras']['shows_cast'] = data
                 
-                if self.extras_config.get('show_crew') and show_id:
-                    crew = self.extras_client.tv_crew(show_id)
-                    if crew:
-                        result['extras']['crew'] = crew[:10]
+                # Shows Crew Endpoint
+                if self.extras_config.get('shows_crew') and show_id:
+                    data = self.extras_client.shows_crew(show_id)
+                    if data:
+                        result['extras']['shows_crew'] = data
                 
-                if self.extras_config.get('show_images') and show_id:
-                    images = self.extras_client.tv_images(show_id)
-                    if images:
-                        result['extras']['images'] = images
+                # Shows Images Endpoint
+                if self.extras_config.get('shows_images') and show_id:
+                    data = self.extras_client.shows_images(show_id)
+                    if data:
+                        result['extras']['shows_images'] = data
                 
-                if self.extras_config.get('episode_guest_cast') and episode_id:
-                    guest_cast = self.extras_client.episode_guest_cast(episode_id)
-                    if guest_cast:
-                        result['extras']['episode_guest_cast'] = guest_cast
+                # Episodes Single Endpoint
+                if self.extras_config.get('episodes_single') and episode_id:
+                    data = self.extras_client.episodes_single(episode_id)
+                    if data:
+                        result['extras']['episodes_single'] = data
                 
-                if self.extras_config.get('episode_guest_crew') and episode_id:
-                    guest_crew = self.extras_client.episode_guest_crew(episode_id)
-                    if guest_crew:
-                        result['extras']['episode_guest_crew'] = guest_crew
+                # Episodes Guestcast Endpoint
+                if self.extras_config.get('episodes_guestcast') and episode_id:
+                    data = self.extras_client.episodes_guestcast(episode_id)
+                    if data:
+                        result['extras']['episodes_guestcast'] = data
+                
+                # Episodes Guestcrew Endpoint
+                if self.extras_config.get('episodes_guestcrew') and episode_id:
+                    data = self.extras_client.episodes_guestcrew(episode_id)
+                    if data:
+                        result['extras']['episodes_guestcrew'] = data
         except Exception:
             result['status']['success'] = False
         

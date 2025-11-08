@@ -3,8 +3,8 @@ import subprocess
 import json
 from typing import Dict, Any
 from datetime import datetime
-from typing import Dict, Any
 from pathlib import Path
+from archiverr.utils.debug import get_debugger
 
 
 class FFProbePlugin:
@@ -14,25 +14,30 @@ class FFProbePlugin:
         self.config = config
         self.name = "ffprobe"
         self.category = "output"
+        self.debugger = get_debugger()
     
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract media metadata using ffprobe.
         
         Args:
-            match_data: Must contain 'scanner' or 'file_reader' with 'input' path
+            match_data: Must contain 'input' with path and virtual flag
             
         Returns:
-            {status, video, audio, container}
+            {status, video, audio, container} or not_supported for virtual paths
         """
         from datetime import datetime
         start_time = datetime.now()
-        # Get input path
-        input_path = None
-        if 'scanner' in match_data:
-            input_path = match_data['scanner'].get('input')
-        elif 'file_reader' in match_data:
-            input_path = match_data['file_reader'].get('input')
+        
+        # Get input metadata from match globals
+        input_metadata = match_data.get('input', {})
+        input_path = input_metadata.get('path')
+        is_virtual = input_metadata.get('virtual', False)
+        
+        # Skip virtual paths - ffprobe cannot analyze non-existent files
+        if is_virtual:
+            self.debugger.debug("ffprobe", "Skipping virtual path", path=input_path)
+            return self._not_supported_result()
         
         if not input_path or not Path(input_path).exists():
             return self._error_result()
@@ -54,6 +59,8 @@ class FFProbePlugin:
                 return self._error_result()
             
             data = json.loads(result.stdout)
+            
+            self.debugger.debug("ffprobe", "Analysis complete", streams=len(data.get('streams', [])))
             
             # Parse streams
             video_stream = None
@@ -98,15 +105,21 @@ class FFProbePlugin:
                 })
             
             # Extract container info
-            format_data = data.get('format', {})
+            format_info = data.get('format', {})
             container = {
-                'format': format_data.get('format_name', ''),
-                'format_long': format_data.get('format_long_name', ''),
-                'size': int(format_data.get('size', 0)),
-                'duration': float(format_data.get('duration', 0)),
-                'bitrate': int(format_data.get('bit_rate', 0)),
-                'probe_score': format_data.get('probe_score', 0)
+                'format': format_info.get('format_name', ''),
+                'duration': float(format_info.get('duration', 0)),
+                'size': int(format_info.get('size', 0)),
+                'bitrate': int(format_info.get('bit_rate', 0))
             }
+            
+            # Log extracted info
+            if video:
+                self.debugger.info("ffprobe", "Video stream found", 
+                                 codec=video.get('codec'), 
+                                 resolution=f"{video.get('width')}x{video.get('height')}")
+            self.debugger.debug("ffprobe", "Audio streams", count=len(audio))
+            self.debugger.debug("ffprobe", "Container format", format=container.get('format'))
             
             end_time = datetime.now()
             return {
@@ -144,6 +157,22 @@ class FFProbePlugin:
                 'started_at': datetime.now().isoformat(),
                 'finished_at': end_time.isoformat(),
                 'duration_ms': int((end_time - datetime.now()).total_seconds() * 1000)
+            },
+            'video': {},
+            'audio': [],
+            'container': {}
+        }
+    
+    def _not_supported_result(self) -> Dict[str, Any]:
+        """Return not supported result for virtual paths"""
+        now = datetime.now()
+        return {
+            'status': {
+                'success': False,
+                'not_supported': True,
+                'started_at': now.isoformat(),
+                'finished_at': now.isoformat(),
+                'duration_ms': 0
             },
             'video': {},
             'audio': [],

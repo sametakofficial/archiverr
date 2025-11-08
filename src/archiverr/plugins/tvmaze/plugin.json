@@ -2,6 +2,7 @@
   "name": "tvmaze",
   "version": "1.0.0",
   "category": "output",
+  "class_name": "TVMazePlugin",
   "depends_on": ["renamer"],
   "expects": ["renamer.parsed"]
 }

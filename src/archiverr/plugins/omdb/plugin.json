@@ -2,6 +2,7 @@
   "name": "omdb",
   "version": "1.0.0",
   "category": "output",
+  "class_name": "OMDbPlugin",
   "depends_on": ["renamer"],
   "expects": ["renamer.parsed"]
 }

@@ -117,6 +117,9 @@ class TemplateManager:
         try:
             # Render condition as template
             result = self.render(condition, context, current_index)
+            # If template error occurred, condition fails
+            if result.startswith("Template error:"):
+                return False
             # Empty string or whitespace = False
             return bool(result.strip())
         except Exception:

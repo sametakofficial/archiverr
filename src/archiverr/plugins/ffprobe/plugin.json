@@ -2,6 +2,7 @@
   "name": "ffprobe",
   "version": "1.0.0",
   "category": "output",
-  "depends_on": ["scanner"],
+  "class_name": "FFProbePlugin",
+  "depends_on": [],
   "expects": ["input"]
 }

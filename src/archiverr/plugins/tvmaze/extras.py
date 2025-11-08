@@ -1,10 +1,23 @@
 # plugins/tvmaze/extras.py
 """
-TVMaze Extra Metadata Fetcher
-Handles optional metadata endpoints for TVMaze API.
+TVMaze Extra Metadata Fetcher - Endpoint-Based System
+
+Each method returns RAW API response without normalization.
+Designed for extensibility - easy to add new endpoints.
+
+Endpoint List:
+  - /shows/{id}/cast
+  - /shows/{id}/crew
+  - /shows/{id}/images
+  - /shows/{id}/episodes
+  - /shows/{id}/seasons
+  - /episodes/{id}
+  - /episodes/{id}/guestcast
+  - /episodes/{id}/guestcrew
 """
 from __future__ import annotations
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
+import requests
 
 TVMAZE_BASE = "https://api.tvmaze.com"
 
@@ -12,163 +25,84 @@ TVMAZE_BASE = "https://api.tvmaze.com"
 class TVMazeExtras:
     """
     TVMaze Extra Metadata API wrapper.
-    
-    TVMaze API does not require authentication.
+    Returns RAW API responses for each endpoint.
+    No API key required for TVMaze.
     """
     
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
     
-    def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
-        """Make GET request to TVMaze API"""
-        import requests
-        
+    def _get(self, endpoint: str) -> Any:
+        """Make GET request to TVMaze API and return RAW response"""
         url = f"{TVMAZE_BASE}/{endpoint.lstrip('/')}"
         
-        resp = requests.get(url, params=params, timeout=self.timeout)
-        resp.raise_for_status()
-        return resp.json()
+        try:
+            resp = requests.get(url, timeout=self.timeout)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception:
+            return {}
     
     # ========================================================================
-    # TV SERIES EXTRAS
+    # TV SHOWS EXTRAS - RAW API RESPONSES
     # ========================================================================
     
-    def tv_cast(self, show_id: int) -> List[Dict[str, Any]]:
+    def shows_cast(self, show_id: int) -> List[Dict[str, Any]]:
         """
-        Get TV series cast.
-        
-        TVMaze /shows/{id}/cast returns array of cast members.
+        Endpoint: GET /shows/{id}/cast
+        Returns: RAW TVMaze API response - array of cast objects with person and character info
         """
-        try:
-            data = self._get(f"shows/{show_id}/cast")
-            
-            cast_list = []
-            for item in data:
-                person = item.get('person', {})
-                character = item.get('character', {})
-                
-                cast_list.append({
-                    'name': person.get('name'),
-                    'character': character.get('name'),
-                    'order': len(cast_list),
-                    'profile_path': person.get('image', {}).get('medium') if person.get('image') else None,
-                    'id': person.get('id')
-                })
-            
-            return cast_list
-        except Exception:
-            return []
+        return self._get(f"shows/{show_id}/cast")
     
-    def tv_crew(self, show_id: int) -> List[Dict[str, Any]]:
+    def shows_crew(self, show_id: int) -> List[Dict[str, Any]]:
         """
-        Get TV series crew.
-        
-        TVMaze /shows/{id}/crew returns array of crew members.
+        Endpoint: GET /shows/{id}/crew
+        Returns: RAW TVMaze API response - array of crew objects with person and type info
         """
-        try:
-            data = self._get(f"shows/{show_id}/crew")
-            
-            crew_list = []
-            for item in data:
-                person = item.get('person', {})
-                crew_type = item.get('type', 'Crew')
-                
-                crew_list.append({
-                    'name': person.get('name'),
-                    'job': crew_type,
-                    'department': crew_type,
-                    'profile_path': person.get('image', {}).get('medium') if person.get('image') else None,
-                    'id': person.get('id')
-                })
-            
-            return crew_list
-        except Exception:
-            return []
+        return self._get(f"shows/{show_id}/crew")
     
-    def tv_images(self, show_id: int) -> Dict[str, Any]:
+    def shows_images(self, show_id: int) -> List[Dict[str, Any]]:
         """
-        Get TV series images.
-        
-        TVMaze /shows/{id}/images returns array of images.
+        Endpoint: GET /shows/{id}/images
+        Returns: RAW TVMaze API response - array of image objects with type and resolutions
         """
-        try:
-            data = self._get(f"shows/{show_id}/images")
-            
-            posters = []
-            backdrops = []
-            
-            for img in data:
-                img_type = img.get('type', '').lower()
-                resolution = img.get('resolutions', {})
-                
-                image_data = {
-                    'path': resolution.get('original', {}).get('url') if resolution.get('original') else None,
-                    'width': resolution.get('original', {}).get('width') if resolution.get('original') else None,
-                    'height': resolution.get('original', {}).get('height') if resolution.get('original') else None
-                }
-                
-                if img_type == 'poster':
-                    posters.append(image_data)
-                elif img_type == 'background':
-                    backdrops.append(image_data)
-                else:
-                    backdrops.append(image_data)
-            
-            return {
-                'posters': posters,
-                'backdrops': backdrops,
-                'stills': []
-            }
-        except Exception:
-            return {'posters': [], 'backdrops': [], 'stills': []}
+        return self._get(f"shows/{show_id}/images")
     
-    def episode_guest_cast(self, episode_id: int) -> List[Dict[str, Any]]:
+    def shows_episodes(self, show_id: int) -> List[Dict[str, Any]]:
         """
-        Get episode guest cast.
-        
-        TVMaze /episodes/{id}/guestcast returns array of guest cast.
+        Endpoint: GET /shows/{id}/episodes
+        Returns: RAW TVMaze API response - array of all episodes for the show
         """
-        try:
-            data = self._get(f"episodes/{episode_id}/guestcast")
-            
-            guest_cast = []
-            for item in data:
-                person = item.get('person', {})
-                character = item.get('character', {})
-                
-                guest_cast.append({
-                    'name': person.get('name'),
-                    'character': character.get('name'),
-                    'profile_path': person.get('image', {}).get('medium') if person.get('image') else None,
-                    'id': person.get('id')
-                })
-            
-            return guest_cast
-        except Exception:
-            return []
+        return self._get(f"shows/{show_id}/episodes")
     
-    def episode_guest_crew(self, episode_id: int) -> List[Dict[str, Any]]:
+    def shows_seasons(self, show_id: int) -> List[Dict[str, Any]]:
         """
-        Get episode guest crew.
-        
-        TVMaze /episodes/{id}/guestcrew returns array of guest crew.
+        Endpoint: GET /shows/{id}/seasons
+        Returns: RAW TVMaze API response - array of season objects
         """
-        try:
-            data = self._get(f"episodes/{episode_id}/guestcrew")
-            
-            guest_crew = []
-            for item in data:
-                person = item.get('person', {})
-                crew_type = item.get('type', 'Guest Crew')
-                
-                guest_crew.append({
-                    'name': person.get('name'),
-                    'job': crew_type,
-                    'department': crew_type,
-                    'profile_path': person.get('image', {}).get('medium') if person.get('image') else None,
-                    'id': person.get('id')
-                })
-            
-            return guest_crew
-        except Exception:
-            return []
+        return self._get(f"shows/{show_id}/seasons")
+    
+    # ========================================================================
+    # EPISODE EXTRAS - RAW API RESPONSES
+    # ========================================================================
+    
+    def episodes_single(self, episode_id: int) -> Dict[str, Any]:
+        """
+        Endpoint: GET /episodes/{id}
+        Returns: RAW TVMaze API response - full episode object with all metadata
+        """
+        return self._get(f"episodes/{episode_id}")
+    
+    def episodes_guestcast(self, episode_id: int) -> List[Dict[str, Any]]:
+        """
+        Endpoint: GET /episodes/{id}/guestcast
+        Returns: RAW TVMaze API response - array of guest cast for specific episode
+        """
+        return self._get(f"episodes/{episode_id}/guestcast")
+    
+    def episodes_guestcrew(self, episode_id: int) -> List[Dict[str, Any]]:
+        """
+        Endpoint: GET /episodes/{id}/guestcrew
+        Returns: RAW TVMaze API response - array of guest crew for specific episode
+        """
+        return self._get(f"episodes/{episode_id}/guestcrew")

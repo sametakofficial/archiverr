@@ -1,6 +1,7 @@
 """Plugin Loader - Load and instantiate plugins"""
 import importlib
 from typing import Dict, Any, Optional
+from archiverr.utils.debug import get_debugger
 
 
 class PluginLoader:
@@ -10,6 +11,7 @@ class PluginLoader:
         self.plugin_metadata = plugin_metadata
         self.config = config
         self.loaded_plugins = {}
+        self.debugger = get_debugger()
     
     def load_plugin(self, plugin_name: str) -> Optional[Any]:
         """
@@ -26,37 +28,34 @@ class PluginLoader:
         
         metadata = self.plugin_metadata.get(plugin_name)
         if not metadata:
+            self.debugger.debug("loader", f"Plugin not found in metadata", plugin=plugin_name)
             return None
         
         # Check if enabled in config
         plugin_config = self.config.get('plugins', {}).get(plugin_name, {})
         if not plugin_config.get('enabled', False):
+            self.debugger.debug("loader", f"Plugin disabled", plugin=plugin_name)
             return None
         
         try:
+            self.debugger.debug("loader", f"Loading plugin", plugin=plugin_name)
+            
             # Import plugin module
             module_path = f"archiverr.plugins.{plugin_name}.client"
             module = importlib.import_module(module_path)
             
-            # Find plugin class (convention: {Name}Plugin)
-            # Convert plugin_name to PascalCase: mock_test -> MockTest, tmdb -> Tmdb
-            parts = plugin_name.split('_')
-            class_name = ''.join(part.capitalize() for part in parts) + 'Plugin'
+            # Get class name from metadata or use convention
+            class_name = metadata.get('class_name')
             
-            # Special cases for acronyms
-            if plugin_name == 'ffprobe':
-                class_name = 'FFProbePlugin'
-            elif plugin_name == 'tmdb':
-                class_name = 'TMDbPlugin'
-            elif plugin_name == 'tvdb':
-                class_name = 'TVDbPlugin'
-            elif plugin_name == 'omdb':
-                class_name = 'OMDbPlugin'
-            elif plugin_name == 'tvmaze':
-                class_name = 'TVMazePlugin'
+            if not class_name:
+                # Convention: {Name}Plugin
+                # Convert plugin_name to PascalCase: mock_test -> MockTest
+                parts = plugin_name.split('_')
+                class_name = ''.join(part.capitalize() for part in parts) + 'Plugin'
             
             plugin_class = getattr(module, class_name, None)
             if not plugin_class:
+                self.debugger.error("loader", f"Plugin class not found", plugin=plugin_name, class_name=class_name)
                 return None
             
             # Instantiate
@@ -64,11 +63,11 @@ class PluginLoader:
             instance._metadata = metadata
             
             self.loaded_plugins[plugin_name] = instance
+            self.debugger.info("loader", f"Plugin loaded successfully", plugin=plugin_name)
             return instance
             
         except Exception as e:
-            if self.config.get('options', {}).get('debug', False):
-                print(f"Failed to load plugin {plugin_name}: {e}")
+            self.debugger.error("loader", f"Failed to load plugin", plugin=plugin_name, error=str(e))
             return None
     
     def load_all(self) -> Dict[str, Any]:

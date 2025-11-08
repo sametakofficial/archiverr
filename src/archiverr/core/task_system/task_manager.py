@@ -1,8 +1,10 @@
 """Task Manager - Execute tasks for matches"""
+import shutil
 from typing import Dict, List, Any
 from pathlib import Path
 
 from .template_manager import TemplateManager
+from archiverr.utils.debug import get_debugger
 
 
 class TaskManager:
@@ -12,6 +14,7 @@ class TaskManager:
         self.config = config
         self.template_manager = template_manager or TemplateManager()
         self.tasks = config.get('tasks', [])
+        self.debugger = get_debugger()
     
     def execute_tasks_for_match(
         self,
@@ -31,6 +34,8 @@ class TaskManager:
             List of task results for this match
         """
         task_results = []
+        
+        self.debugger.debug("tasks", f"Evaluating tasks for match", index=current_index, total_tasks=len(self.tasks))
         
         for task_config in self.tasks:
             result = self._execute_task(task_config, api_response, current_index, dry_run)
@@ -65,7 +70,10 @@ class TaskManager:
         # Check condition
         if condition:
             if not self.template_manager.evaluate_condition(condition, api_response, current_index):
+                self.debugger.debug("tasks", f"Task condition not met", task=task_name)
                 return None
+        
+        self.debugger.debug("tasks", f"Executing task", task=task_name, type=task_type)
         
         # Execute based on type
         if task_type == 'print':

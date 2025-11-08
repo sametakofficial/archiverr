@@ -1,7 +1,6 @@
 """Mock Test Plugin - Returns dummy data for testing"""
 from typing import Dict, Any
 from datetime import datetime
-from typing import Dict, Any
 
 
 class MockTestPlugin:
@@ -24,12 +23,10 @@ class MockTestPlugin:
         """
         from datetime import datetime
         start_time = datetime.now()
-        # Get input path for context
-        input_path = None
-        if 'scanner' in match_data:
-            input_path = match_data['scanner'].get('input')
-        elif 'file_reader' in match_data:
-            input_path = match_data['file_reader'].get('input')
+        
+        # Get input metadata using new pattern
+        input_metadata = match_data.get('input', {})
+        input_path = input_metadata.get('path')
         
         end_time = datetime.now()
         return {

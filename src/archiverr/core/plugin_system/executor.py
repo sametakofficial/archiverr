@@ -1,8 +1,9 @@
 """Plugin Executor - Execute plugins with parallel support"""
 import asyncio
 import time
-from typing import Dict, List, Any, Set
+from typing import Dict, List, Any
 from concurrent.futures import ThreadPoolExecutor
+from archiverr.utils.debug import get_debugger
 
 
 class PluginExecutor:
@@ -10,6 +11,7 @@ class PluginExecutor:
     
     def __init__(self, max_workers: int = 4):
         self.max_workers = max_workers
+        self.debugger = get_debugger()
     
     async def execute_group_async(
         self,
@@ -31,9 +33,11 @@ class PluginExecutor:
         async def run_plugin(plugin_name: str):
             plugin = plugins.get(plugin_name)
             if not plugin:
+                self.debugger.error("executor", f"Plugin not found", plugin=plugin_name)
                 return plugin_name, self._error_result()
             
             try:
+                self.debugger.debug("executor", f"Executing plugin", plugin=plugin_name)
                 started_at = time.time()
                 
                 # Execute plugin
@@ -54,9 +58,19 @@ class PluginExecutor:
                         'duration_ms': duration_ms
                     }
                 
+                # Log result
+                status = result.get('status', {})
+                if status.get('not_supported'):
+                    self.debugger.debug("executor", f"Plugin not supported", plugin=plugin_name, duration_ms=duration_ms)
+                elif status.get('success'):
+                    self.debugger.info("executor", f"Plugin executed successfully", plugin=plugin_name, duration_ms=duration_ms)
+                else:
+                    self.debugger.warn("executor", f"Plugin failed", plugin=plugin_name, duration_ms=duration_ms)
+                
                 return plugin_name, result
                 
-            except Exception:
+            except Exception as e:
+                self.debugger.error("executor", f"Plugin execution error", plugin=plugin_name, error=str(e))
                 return plugin_name, self._error_result()
         
         # Run all plugins in group concurrently
@@ -88,17 +102,26 @@ class PluginExecutor:
         
         for plugin_name, plugin in plugins.items():
             try:
+                self.debugger.debug("executor", f"Executing input plugin", plugin=plugin_name)
                 results = plugin.execute()
                 
                 if isinstance(results, list):
+                    self.debugger.info("executor", f"Input plugin found matches", plugin=plugin_name, count=len(results))
                     for result in results:
-                        # Add plugin name
+                        # Extract input metadata
+                        input_metadata = result.get('input', {'path': '', 'virtual': False})
+                        
+                        # Add plugin name and input metadata to match
                         match = {
-                            plugin_name: result
+                            plugin_name: result,
+                            'input': input_metadata
                         }
                         all_matches.append(match)
+                else:
+                    self.debugger.warn("executor", f"Input plugin returned non-list", plugin=plugin_name)
                         
-            except Exception:
+            except Exception as e:
+                self.debugger.error("executor", f"Input plugin failed", plugin=plugin_name, error=str(e))
                 continue
         
         return all_matches
@@ -107,15 +130,17 @@ class PluginExecutor:
         self,
         plugins: Dict[str, Any],
         execution_groups: List[List[str]],
-        match_data: Dict[str, Any]
+        match_data: Dict[str, Any],
+        resolver: Any = None
     ) -> Dict[str, Any]:
         """
-        Execute output plugins in dependency order.
+        Execute output plugins with dynamic execution based on expectations.
         
         Args:
             plugins: Dict of loaded output plugins
             execution_groups: List of groups (from DependencyResolver)
             match_data: Initial match data from input plugins
+            resolver: DependencyResolver instance for checking expectations
             
         Returns:
             Complete match data with all plugin results
@@ -125,11 +150,38 @@ class PluginExecutor:
         failed_plugins = []
         not_supported_plugins = []
         
-        for group in execution_groups:
+        # Track available data for expectations checking
+        available_data = self._extract_available_data(result)
+        
+        for group_idx, group in enumerate(execution_groups):
+            self.debugger.debug("executor", f"Executing group {group_idx}", plugins=", ".join(group))
+            
+            # If resolver provided, filter group by expectations
+            if resolver:
+                ready_plugins = [p for p in group if resolver.check_expects(p, available_data)]
+                pending_plugins = [p for p in group if p not in ready_plugins]
+                
+                if pending_plugins:
+                    self.debugger.debug("executor", "Some plugins waiting for expectations",
+                                      pending=", ".join(pending_plugins))
+                group = ready_plugins
+            
+            if not group:
+                continue
+            
             group_results = self.execute_group(plugins, group, result)
             
             for plugin_name, plugin_result in group_results.items():
                 result[plugin_name] = plugin_result
+                
+                # Update input category if plugin provides it (generic pattern, no hardcoded names)
+                if 'category' in plugin_result and 'input' in result and isinstance(result['input'], dict):
+                    result['input']['category'] = plugin_result['category']
+                    self.debugger.debug("executor", "Updated input category", 
+                                      plugin=plugin_name, category=plugin_result['category'])
+                
+                # Update available data after each plugin execution
+                available_data = self._extract_available_data(result)
                 
                 # Track success/failure/not_supported
                 status = plugin_result.get('status', {})
@@ -153,7 +205,44 @@ class PluginExecutor:
             'duration_ms': 0
         }
         
+        self.debugger.debug("executor", "Output pipeline complete",
+                          success=len(success_plugins),
+                          failed=len(failed_plugins),
+                          not_supported=len(not_supported_plugins))
+        
         return result
+    
+    def _extract_available_data(self, result: Dict[str, Any]) -> set:
+        """
+        Extract available data keys from current result.
+        
+        Examples:
+        - 'input' if result has input
+        - 'renamer.parsed' if result['renamer']['parsed'] exists
+        - 'ffprobe.video' if result['ffprobe']['video'] exists
+        
+        Args:
+            result: Current match result
+            
+        Returns:
+            Set of available data keys
+        """
+        available = set()
+        
+        for key, value in result.items():
+            if key in ['status', 'index']:
+                continue
+            
+            # Add top-level key
+            available.add(key)
+            
+            # Add nested keys (plugin.field)
+            if isinstance(value, dict):
+                for subkey in value.keys():
+                    if subkey != 'status':  # Skip status fields
+                        available.add(f"{key}.{subkey}")
+        
+        return available
     
     def _error_result(self) -> Dict[str, Any]:
         """Create error result structure"""

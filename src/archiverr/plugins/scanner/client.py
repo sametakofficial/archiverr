@@ -1,8 +1,8 @@
 """Scanner Plugin - File/Directory Discovery"""
-from typing import Dict, Any
+from typing import Dict, Any, List
 from datetime import datetime
-from typing import List, Dict, Any
 from pathlib import Path
+from archiverr.utils.debug import get_debugger
 
 
 class ScannerPlugin:
@@ -12,6 +12,7 @@ class ScannerPlugin:
         self.config = config
         self.name = "scanner"
         self.category = "input"
+        self.debugger = get_debugger()
     
     def execute(self, match_data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """
@@ -22,6 +23,8 @@ class ScannerPlugin:
         targets = self.config.get('targets', [])
         recursive = self.config.get('recursive', True)
         allow_virtual = self.config.get('allow_virtual_paths', False)
+        
+        self.debugger.debug("scanner", "Starting scan", targets=len(targets), recursive=recursive)
         
         results = []
         
@@ -43,7 +46,10 @@ class ScannerPlugin:
                         'finished_at': end_time.isoformat(),
                         'duration_ms': int((end_time - start_time).total_seconds() * 1000)
                     },
-                    'input': str(target_path)
+                    'input': {
+                        'path': str(target_path),
+                        'virtual': False
+                    }
                 })
             
             # Directory scanning
@@ -60,11 +66,15 @@ class ScannerPlugin:
                                     'finished_at': end_time.isoformat(),
                                     'duration_ms': int((end_time - start_time).total_seconds() * 1000)
                                 },
-                                'input': str(file)
+                                'input': {
+                                    'path': str(file),
+                                    'virtual': False
+                                }
                             })
             
             # Virtual path support
             elif allow_virtual and not target_path.exists():
+                self.debugger.debug("scanner", "Virtual path detected", path=target)
                 start_time = datetime.now()
                 end_time = datetime.now()
                 results.append({
@@ -74,7 +84,11 @@ class ScannerPlugin:
                         'finished_at': end_time.isoformat(),
                         'duration_ms': int((end_time - start_time).total_seconds() * 1000)
                     },
-                    'input': target
+                    'input': {
+                        'path': target,
+                        'virtual': True
+                    }
                 })
         
+        self.debugger.info("scanner", "Scan complete", found=len(results))
         return results

@@ -7,6 +7,7 @@ import requests
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from .extras import TVDbExtras
+from archiverr.utils.debug import get_debugger
 
 TVDB_BASE = "https://api4.thetvdb.com/v4"
 
@@ -22,6 +23,7 @@ class TVDbPlugin:
         self.api_key = config.get('api_key', '')
         self.timeout = 15
         self.token: Optional[str] = None
+        self.debugger = get_debugger()
         
         # Global extras config
         self.extras_config = config.get('extras', {})
@@ -33,6 +35,8 @@ class TVDbPlugin:
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
         """Execute TVDb plugin to fetch metadata"""
         start_time = datetime.now()
+        
+        self.debugger.debug("tvdb", "Starting TVDb execution")
         
         parsed = match_data.get('renamer', {}).get('parsed', {})
         movie_data = parsed.get('movie')
@@ -53,9 +57,11 @@ class TVDbPlugin:
                 movie_name = movie_data.get('name')
                 year = movie_data.get('year')
                 
+                self.debugger.debug("tvdb", "Searching movie", name=movie_name, year=year)
                 search_results = self.search_movie(movie_name, year, max_results=1)
                 if search_results:
                     movie_id = search_results[0]['ids']['tvdb']
+                    self.debugger.info("tvdb", "Movie found", tvdb_id=movie_id, title=movie_name)
                     movie_info = self.movie_details(int(movie_id))
                     
                     result['movie'] = {
@@ -66,34 +72,15 @@ class TVDbPlugin:
                         'runtime': movie_info.get('runtime')
                     }
                     
-                    # Fetch extras if enabled - TVDb movies need extended endpoint
-                    if self.extras_config.get('movie_credits') or self.extras_config.get('movie_images'):
+                    # Fetch extras - Endpoint-Based System (RAW API responses)
+                    extras_client = TVDbExtras(self.token, self.timeout)
+                    
+                    # Movies Extended Endpoint
+                    if self.extras_config.get('movies_extended'):
                         try:
-                            extended_data = self._get(f"movies/{movie_id}/extended").get("data", {})
-                            
-                            if self.extras_config.get('movie_credits'):
-                                characters = extended_data.get('characters', [])
-                                cast_list = []
-                                for char in characters[:10]:
-                                    cast_list.append({
-                                        'name': char.get('personName'),
-                                        'character': char.get('name'),
-                                        'profile_path': char.get('image')
-                                    })
-                                if cast_list:
-                                    result['extras']['cast'] = cast_list
-                            
-                            if self.extras_config.get('movie_images'):
-                                artworks = extended_data.get('artworks', [])
-                                if artworks:
-                                    result['extras']['images'] = {'posters': [], 'backdrops': []}
-                                    for art in artworks[:5]:
-                                        img_data = {'path': art.get('image'), 'thumbnail': art.get('thumbnail')}
-                                        art_type = str(art.get('type', '')).lower()
-                                        if 'poster' in art_type:
-                                            result['extras']['images']['posters'].append(img_data)
-                                        else:
-                                            result['extras']['images']['backdrops'].append(img_data)
+                            data = extras_client.movies_extended(int(movie_id))
+                            if data:
+                                result['extras']['movies_extended'] = data
                         except Exception:
                             pass
             
@@ -103,9 +90,11 @@ class TVDbPlugin:
                 season_num = show_data.get('season')
                 episode_num = show_data.get('episode')
                 
+                self.debugger.debug("tvdb", "Searching TV show", name=show_name)
                 search_results = self.search_tv(show_name, max_results=1)
                 if search_results:
                     series_id = int(search_results[0]['ids']['tvdb'])
+                    self.debugger.info("tvdb", "TV show found", tvdb_id=series_id, title=show_name)
                     series_info = self.get_series_details(series_id)
                     
                     result['show'] = {
@@ -116,29 +105,58 @@ class TVDbPlugin:
                         'first_aired': series_info.get('first_air_date')
                     }
                     
-                    # Fetch extras if enabled
+                    # Fetch extras - Endpoint-Based System (RAW API responses)
                     extras_client = TVDbExtras(self.token, self.timeout)
-                    if self.extras_config.get('show_cast'):
-                        credits = extras_client.tv_credits(series_id)
-                        if credits and credits.get('cast'):
-                            result['extras']['cast'] = credits['cast'][:10]
                     
-                    if self.extras_config.get('show_images'):
-                        images = extras_client.tv_images(series_id)
-                        if images:
-                            result['extras']['images'] = images
+                    # Series Extended Endpoint
+                    if self.extras_config.get('series_extended'):
+                        data = extras_client.series_extended(series_id)
+                        if data:
+                            result['extras']['series_extended'] = data
                     
+                    # Series Artworks Endpoint
+                    if self.extras_config.get('series_artworks'):
+                        data = extras_client.series_artworks(series_id)
+                        if data:
+                            result['extras']['series_artworks'] = data
+                    
+                    # Episode and season extras
                     if season_num and episode_num:
                         episode_info = self.get_episode(series_id, season_num, episode_num)
                         if episode_info:
+                            episode_id = episode_info.get('id')
                             result['episode'] = {
+                                'id': episode_id,
                                 'number': episode_info.get('episode_number'),
                                 'season': episode_info.get('season_number'),
                                 'name': episode_info.get('name'),
                                 'aired': episode_info.get('air_date')
                             }
+                            
+                            # Episode extras
+                            if episode_id:
+                                # Episodes Extended Endpoint
+                                if self.extras_config.get('episodes_extended'):
+                                    data = extras_client.episodes_extended(episode_id)
+                                    if data:
+                                        result['extras']['episodes_extended'] = data
                         
-                        result['season'] = {'number': season_num, 'name': f'Season {season_num}'}
+                        # Season extras
+                        season_id = self._resolve_season_id(series_id, season_num)
+                        if season_id:
+                            result['season'] = {
+                                'id': season_id,
+                                'number': season_num,
+                                'name': f'Season {season_num}'
+                            }
+                            
+                            # Seasons Extended Endpoint
+                            if self.extras_config.get('seasons_extended'):
+                                data = extras_client.seasons_extended(season_id)
+                                if data:
+                                    result['extras']['seasons_extended'] = data
+                        else:
+                            result['season'] = {'number': season_num, 'name': f'Season {season_num}'}
             
         except Exception:
             result['status']['success'] = False

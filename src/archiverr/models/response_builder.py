@@ -1,10 +1,14 @@
 """API Response Builder - Merge plugin results"""
 from typing import Dict, List, Any
 from datetime import datetime
+from archiverr.utils.debug import get_debugger
 
 
 class APIResponseBuilder:
     """Builds final API response from plugin results"""
+    
+    def __init__(self):
+        self.debugger = get_debugger()
     
     def build(self, matches: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -20,6 +24,8 @@ class APIResponseBuilder:
                 'items': [...]
             }
         """
+        self.debugger.debug("response_builder", "Building API response", matches=len(matches))
+        
         now = datetime.now().isoformat()
         
         # Build items with index and rename status to matchGlobals
@@ -29,13 +35,21 @@ class APIResponseBuilder:
             item = dict(match)
             item['index'] = index
             
-            # Rename status to matchGlobals
+            # Extract input metadata (should be at top level of match)
+            input_metadata = item.get('input', {'path': '', 'virtual': False})
+            
+            # Rename status to matchGlobals and add input
             if 'status' in item:
                 item['matchGlobals'] = item.pop('status')
+                # Add input metadata to matchGlobals
+                item['matchGlobals']['input'] = input_metadata
                 # Count errors - only failed plugins, not "not supported" ones
                 failed_count = len(item['matchGlobals'].get('failed_plugins', []))
                 if failed_count > 0:
                     total_errors += 1
+                    failed_plugins = item['matchGlobals'].get('failed_plugins', [])
+                    self.debugger.warn("response_builder", f"Match has failed plugins", 
+                                      index=index, failed=failed_plugins)
             
             items.append(item)
         
@@ -51,6 +65,9 @@ class APIResponseBuilder:
                 'duration_ms': 0
             }
         }
+        
+        self.debugger.info("response_builder", "API response built", 
+                          matches=len(matches), errors=total_errors, success=(total_errors == 0))
         
         return {
             'globals': globals_data,

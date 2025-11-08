@@ -3,6 +3,7 @@ import requests
 from typing import Dict, Any
 from datetime import datetime
 from .extras import TMDbExtras
+from archiverr.utils.debug import get_debugger
 
 
 class TMDbPlugin:
@@ -15,13 +16,14 @@ class TMDbPlugin:
         self.name = "tmdb"
         self.category = "output"
         self.api_key = config.get('api_key', '')
-        self.lang = config.get('lang', 'en-US')
+        self.lang = config.get('language', config.get('lang', 'en-US'))
         self.region = config.get('region', 'TR')
+        self.debugger = get_debugger()
         
-        # Initialize extras client
-        self.extras_client = TMDbExtras(self.api_key)
+        # Initialize extras client with language support
+        self.extras_client = TMDbExtras(self.api_key, self.lang)
         
-        # Get extras configuration
+        # Get extras configuration - endpoint-based
         self.extras_config = config.get('extras', {})
     
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -47,10 +49,13 @@ class TMDbPlugin:
         
         # Try movie FIRST (year is strong indicator)
         if movie_data and movie_data.get('name') and movie_data.get('year'):
+            self.debugger.debug("tmdb", "Processing as movie", name=movie_data['name'], year=movie_data.get('year'))
             return self._fetch_movie(movie_data)
         
         # Try show
         if show_data and show_data.get('name'):
+            self.debugger.debug("tmdb", "Processing as show", name=show_data['name'], 
+                              season=show_data.get('season'), episode=show_data.get('episode'))
             return self._fetch_show(show_data)
         
         return self._error_result()
@@ -76,10 +81,12 @@ class TMDbPlugin:
             search_data = search_resp.json()
             
             if not search_data.get('results'):
+                self.debugger.warn("tmdb", "No TV show found", query=show_name)
                 return self._error_result()
             
             show = search_data['results'][0]
             show_id = show['id']
+            self.debugger.info("tmdb", "TV show match found", tmdb_id=show_id, name=show.get('name'))
             
             # Get episode details
             episode_url = f"{self.BASE_URL}/tv/{show_id}/season/{season_num}/episode/{episode_num}"
@@ -105,30 +112,50 @@ class TMDbPlugin:
             show_resp.raise_for_status()
             show_details = show_resp.json()
             
-            # Fetch extras for TV show
+            # Fetch extras - Endpoint-Based System (RAW API responses)
             extras = {}
-            episode_id = episode.get('id')
             
-            if self.extras_config.get('episode_credits') and episode_id:
-                credits = self.extras_client.episode_credits(show_id, season_num, episode_num)
-                if credits:
-                    extras['episode_cast'] = credits.get('cast', [])[:10]
-                    extras['episode_crew'] = credits.get('crew', [])[:10]
+            # TV Credits Endpoint
+            if self.extras_config.get('tv_credits'):
+                data = self.extras_client.tv_credits(show_id)
+                if data:
+                    extras['tv_credits'] = data
             
-            if self.extras_config.get('episode_images') and episode_id:
-                images = self.extras_client.episode_images(show_id, season_num, episode_num)
-                if images:
-                    extras['episode_images'] = images
+            # TV Images Endpoint
+            if self.extras_config.get('tv_images'):
+                data = self.extras_client.tv_images(show_id)
+                if data:
+                    extras['tv_images'] = data
             
-            if self.extras_config.get('show_images'):
-                images = self.extras_client.tv_images(show_id)
-                if images:
-                    extras['show_images'] = images
+            # TV Videos Endpoint
+            if self.extras_config.get('tv_videos'):
+                data = self.extras_client.tv_videos(show_id)
+                if data:
+                    extras['tv_videos'] = data
             
-            if self.extras_config.get('show_videos'):
-                videos = self.extras_client.tv_videos(show_id)
-                if videos:
-                    extras['show_videos'] = videos
+            # TV Keywords Endpoint
+            if self.extras_config.get('tv_keywords'):
+                data = self.extras_client.tv_keywords(show_id)
+                if data:
+                    extras['tv_keywords'] = data
+            
+            # TV Season Images Endpoint
+            if self.extras_config.get('tv_season_images'):
+                data = self.extras_client.tv_season_images(show_id, season_num)
+                if data:
+                    extras['tv_season_images'] = data
+            
+            # TV Episode Credits Endpoint
+            if self.extras_config.get('tv_episode_credits'):
+                data = self.extras_client.tv_episode_credits(show_id, season_num, episode_num)
+                if data:
+                    extras['tv_episode_credits'] = data
+            
+            # TV Episode Images Endpoint
+            if self.extras_config.get('tv_episode_images'):
+                data = self.extras_client.tv_episode_images(show_id, season_num, episode_num)
+                if data:
+                    extras['tv_episode_images'] = data
             
             end_time = datetime.now()
             return {
@@ -197,10 +224,12 @@ class TMDbPlugin:
             search_data = search_resp.json()
             
             if not search_data.get('results'):
+                self.debugger.warn("tmdb", "No movie found", query=movie_name, year=movie_year)
                 return self._error_result()
             
             movie = search_data['results'][0]
             movie_id = movie['id']
+            self.debugger.info("tmdb", "Movie match found", tmdb_id=movie_id, title=movie.get('title'))
             
             # Get movie details
             movie_url = f"{self.BASE_URL}/movie/{movie_id}"
@@ -213,29 +242,32 @@ class TMDbPlugin:
             movie_resp.raise_for_status()
             movie_details = movie_resp.json()
             
+            # Fetch extras - Endpoint-Based System (RAW API responses)
             extras = {}
             
-            # Fetch extras using extras client
+            # Movie Credits Endpoint
             if self.extras_config.get('movie_credits'):
-                credits = self.extras_client.movie_credits(movie_id)
-                if credits:
-                    extras['cast'] = credits.get('cast', [])[:10]
-                    extras['crew'] = credits.get('crew', [])[:10]
+                data = self.extras_client.movie_credits(movie_id)
+                if data:
+                    extras['movie_credits'] = data
             
+            # Movie Images Endpoint
             if self.extras_config.get('movie_images'):
-                images = self.extras_client.movie_images(movie_id)
-                if images:
-                    extras['images'] = images
+                data = self.extras_client.movie_images(movie_id)
+                if data:
+                    extras['movie_images'] = data
             
+            # Movie Videos Endpoint
             if self.extras_config.get('movie_videos'):
-                videos = self.extras_client.movie_videos(movie_id)
-                if videos:
-                    extras['videos'] = videos
+                data = self.extras_client.movie_videos(movie_id)
+                if data:
+                    extras['movie_videos'] = data
             
+            # Movie Keywords Endpoint
             if self.extras_config.get('movie_keywords'):
-                keywords = self.extras_client.movie_keywords(movie_id)
-                if keywords:
-                    extras['keywords'] = [k['name'] for k in keywords[:10]]
+                data = self.extras_client.movie_keywords(movie_id)
+                if data:
+                    extras['movie_keywords'] = data
             
             end_time = datetime.now()
             return {
