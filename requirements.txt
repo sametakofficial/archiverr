@@ -1,8 +1,28 @@
-requests
-pyyaml
-regex
-python-dotenv
-sqlalchemy
-fastapi
-uvicorn[standard]
-pydantic
+# Core dependencies with version pinning for production stability
+# Update versions periodically and test thoroughly
+
+# HTTP client for API requests
+requests>=2.31.0,<3.0.0
+
+# YAML configuration parsing
+pyyaml>=6.0.1,<7.0.0
+
+# Advanced regex support
+regex>=2023.10.3
+
+# Environment variable loading
+python-dotenv>=1.0.0,<2.0.0
+
+# Database ORM (for future undo/redo feature)
+sqlalchemy>=2.0.0,<3.0.0
+
+# Web framework (for future API backend)
+fastapi>=0.104.0,<1.0.0
+
+# ASGI server
+uvicorn[standard]>=0.24.0,<1.0.0
+
+# Data validation
+pydantic>=2.4.0,<3.0.0
+
+jinja2

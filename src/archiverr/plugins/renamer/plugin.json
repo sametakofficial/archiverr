@@ -1,0 +1,7 @@
+{
+  "name": "renamer",
+  "version": "1.0.0",
+  "category": "output",
+  "depends_on": ["ffprobe"],
+  "expects": ["ffprobe.video", "input"]
+}

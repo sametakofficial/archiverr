@@ -1,227 +1,156 @@
-# archiverr configuration (YAML)
-# Tüm yapılandırma bu dosyada - .env artık kullanılmıyor
+# Archiverr Configuration - Plugin Architecture
 
-# ────────────────────────────────────────────────────────────────────────────
-# TMDb API
-# ────────────────────────────────────────────────────────────────────────────
-tmdb:
-  api_key: "ac7d9e25e603a7167f183ed446b58e8f"
-  lang: "tr-TR"
-  fallback_lang: "en-US"
-  region: "TR"
-
-
-tvdb:
-  api_key: "ac27b346-7bec-4667-a4c9-51c82525c461"
-  lang: "tr-TR"
-  fallback_lang: "en-US"
-  region: "TR"
-
-tvmaze:
-  api_key: "YfO4grkXZ4uSmgSljA5vIaoxVFlu82Ky"
-  lang: "tr-TR"
-  fallback_lang: "en-US"
-  region: "TR"
-
-
-omdb:
-  api_key: "3aed01a3"
-  lang: "tr-TR"
-  fallback_lang: "en-US"
-  region: "TR"
-
-
-tv_priority:
-  - omdb
-  - tvmaze
-  - tmdb
-  - tvdb 
-
-
-
-
-
-movie_priority:
-  - tmdb
-  - tvdb
-  - omdb
-
-# ────────────────────────────────────────────────────────────────────────────
-# Extra Metadata (Global - applies to all APIs)
-# ────────────────────────────────────────────────────────────────────────────
-# These require separate API calls. Each API implements what it supports.
-# Enable only what you need to minimize API requests.
-extras:
-  # Movie extras
-  movie_credits: false         # Cast & crew
-  movie_images: false          # Posters, backdrops
-  movie_videos: false          # Trailers, teasers, clips
-  movie_keywords: false        # Keywords/tags
-  movie_external_ids: false    # IMDB, Facebook, TVDB, etc.
-  movie_watch_providers: false # Streaming services (Netflix, etc.)
-  
-  # TV series extras
-  tv_credits: true            # Cast & crew
-  tv_aggregate_credits: true  # All cast across all seasons (TMDb only)
-  tv_images: true             # Posters, backdrops
-  tv_videos: true             # Trailers, teasers
-  tv_keywords: true           # Keywords/tags
-  tv_external_ids: true       # IMDB, TVDB, Facebook, etc.
-  tv_content_ratings: true    # Age ratings by country
-  tv_watch_providers: true    # Streaming services
-  
-  # Season extras (per season)
-  season_credits: true        # Cast & crew for specific season
-  season_images: true         # Season posters
-  season_videos: true         # Season trailers
-  
-  # Episode extras (per episode)
-  episode_credits: true       # Cast & crew for specific episode
-  episode_images: true        # Episode stills
-  episode_videos: true        # Episode clips
-
-# ────────────────────────────────────────────────────────────────────────────
-# Options
-# ────────────────────────────────────────────────────────────────────────────
 options:
-  dry_run: true              # false yaparsan taşır/yeniden adlandırır
-  debug: true                # true ise aşama aşama detaylı log gösterir
-  hardlink: true             # true -> move yerine hardlink açar
-  
-  # NFO options
-  nfo_enable: true           # .nfo metadata yazılsın mı
-  nfo_force: false           # .nfo varsa üzerine yazılsın mı
-  dry_run_save_nfo: false    # dry_run modunda bile NFO kaydetsin mi
-  
-  # FFprobe options
-  ffprobe_enable: true       # FFprobe master switch (tümüyle devre dışı bırak)
-  ffprobe_nfo_enable: true   # FFprobe cache {file}-ffprobe.nfo yazma/okuma
-  ffprobe_force: false       # Cache'i görmezden gel, zorla ffprobe çalıştır
-  dry_run_save_ffprobe: false # dry_run modunda bile FFprobe NFO kaydetsin mi
-  
-  # Virtual path support (for testing/manual metadata fetch)
-  allow_virtual_paths: true # true ise dosya yok olsa bile çalışır (manual extras için)
+  debug: true
+  dry_run: true
+  hardlink: true
 
-# ────────────────────────────────────────────────────────────────────────────
-# Scanner
-# ────────────────────────────────────────────────────────────────────────────
-scanner:
-  recursive: true
-  exclude_unparsed: false
-  delete_keywords: []        # ekstra temizlenecek kelimeler
+plugins:
+  scanner:
+    enabled: true
+    targets:
+      - "/home/samet/torrents/Mr. & Mrs. Smith (2005) BluRay 1080p DDP5.1 H.265 TSRG.mkv"
+      - "/home/samet/torrents/A Beautiful Mind - Akıl Oyunları (2001) BR 1080p 10Bit x265 Dolby 5.1 [DUAL].mkv"
+    recursive: false
+  
+  file_reader:
+    enabled: true
+    allow_virtual_paths: true
+    targets:
+      - "/media/shows/Breaking Bad S01E01.mkv"
+      - "/home/samet/Workspace/archiverr/tests/targets.txt"
+  
+  ffprobe:
+    enabled: true
+    timeout: 15
+  
+  renamer:
+    enabled: true
+    media_type: "auto"  # auto, movie, show
+  
+  tmdb:
+    enabled: true
+    api_key: "ac7d9e25e603a7167f183ed446b58e8f"
+    lang: "tr-TR"
+    fallback_lang: "en-US"
+    region: "TR"
+    length_check: true
+    extras:
+      show_credits: true
+      show_images: true
+      show_videos: true
+      show_keywords: true
+      season_images: false
+      episode_credits: true
+      episode_images: false
+      movie_credits: true
+      movie_images: true
+      movie_videos: true
+      movie_keywords: true
+  
+  tvdb:
+    enabled: true
+    api_key: "ac27b346-7bec-4667-a4c9-51c82525c461"
+    lang: "tr-TR"
+    extras:
+      show_cast: true            # /series/{id}/extended (people)
+      show_crew: true            # /series/{id}/extended
+      show_images: true          # /series/{id}/artworks
+      show_videos: true          # /series/{id}/extended (trailers)
+      show_keywords: true        # /series/{id}/extended (tags)
+      season_images: true        # /seasons/{id}/extended
+      episode_credits: true      # /episodes/{id}/extended
+      episode_images: true       # /episodes/{id}/extended
+      movie_credits: true        # /movies/{id}/extended
+      movie_images: true         # /movies/{id}/extended
+      movie_keywords: true       # /movies/{id}/extended
+  
+  omdb:
+    enabled: true
+    api_key: "3aed01a3"
+  
+  tvmaze:
+    enabled: true
+    extras:
+      show_cast: true            # /shows/{id}/cast
+      show_crew: true            # /shows/{id}/crew
+      show_images: true          # /shows/{id}/images
+      episode_guest_cast: true   # /episodes/{id}/guestcast
+      episode_guest_crew: true   # /episodes/{id}/guestcrew
+  
+  mock_test:
+    enabled: true
 
-# ────────────────────────────────────────────────────────────────────────────
-# Rename (Paths + Patterns)
-# ────────────────────────────────────────────────────────────────────────────
-rename:
-  # Kaynak/varış kökleri
-  movies_src: "/data/src/movies"
-  movies_dst: "/media/Movies"
-  series_src: "/data/src/series"
-  series_dst: "/media/Series"
+tasks:
+  - name: "print_match_header"
+    type: "print"
+    template: |
+      
+      ========== MATCH {{ index }} ==========
   
-  # Film rename kuralı (query formatında)
-  movies:
-    print: "✓ {title} ({year}) [{apiSource}]"  # Console log formatı
-    save: "{title} ({year})/{title} ({year}) [{videoResolution}][{videoCodec}][{audioLanguage:upper}]"
-    # where: "year >= 2000"  # Opsiyonel filtre
+  - name: "print_input"
+    type: "print"
+    template: |
+      {% if scanner %}Input: {{ scanner.input }}{% elif file_reader %}Input: {{ file_reader.input }}{% endif %}
   
-  # Dizi rename kuralı (query formatında)
-  series:
-    print: |
-      ✓ SHOW: {showName} ({firstAirYear})
-        Original: {originalShowName}
-        S{seasonNumber:02d}E{episodeNumber:02d} - {episodeName}
-        Episode Air: {episodeAirDate}
-        Overview: {episodeOverview:max:50}
-        Rating: {voteAverage}/10 ({voteCount} votes)
-        Network: {networkName}
-        Genre: {genreName}
-        Seasons: {numberOfSeasons} | Episodes: {numberOfEpisodes}
-        Type: {showType} | In Production: {inProduction}
-        API: [{apiSource}] | Time: {took:.2f}s
-        Episode Runtime: {episodeRuntime} min
-        Episode Rating: {episodeVoteAverage}/10 ({episodeVoteCount} votes)
-        
-        [Extras] Cast: {cast.1.name}, {cast.2.name}, {cast.3.name} ({castCount}) | Director: {director} | Posters: {postersCount} | Trailers: {trailers.1.name} | Keywords: {keywords.1.name}, {keywords.2.name}
-    save: "{showName} ({firstAirYear})/Season {seasonNumber}/{showName} - S{seasonNumber:02d}E{episodeNumber:02d} - {episodeName}"
-    # where: "videoHeight >= 720"  # Opsiyonel filtre
-
-# ────────────────────────────────────────────────────────────────────────────
-# Query Engine (Gelişmiş Analiz ve Organizasyon)
-# ────────────────────────────────────────────────────────────────────────────
-query_engine:
-  # NFO cache dosyalarını arar
-  root: ""                   # boş ise rename.movies_dst / rename.series_dst altında arar
-  pattern: "*-ffmpeg.nfo"    # ffprobe JSON cache dosyaları
+  - name: "print_movie"
+    type: "print"
+    condition: "{% if renamer and renamer.parsed and renamer.parsed.movie is not none and renamer.parsed.movie.name and renamer.parsed.movie.year %}"
+    template: |
+      MOVIE: {{ renamer.parsed.movie.name }} ({{ renamer.parsed.movie.year }})
+      {% if tmdb and tmdb.movie %}TMDb Rating: {{ tmdb.movie.vote_average }}/10{% endif %}
+      {% if omdb and omdb.movie %}OMDb Rating: {{ omdb.movie.imdb_rating }}{% endif %}
   
-  # Global değişkenler (query'lerde kullanılabilir)
-  globals:
-    allVideoQualities: auto  # veya [2160, 1440, 1080, 720, 576, 480]
-    cutYear: 2010            # örnek: bu yıldan sonraki filmler
+  - name: "print_show"
+    type: "print"
+    condition: "{% if renamer and renamer.parsed and renamer.parsed.show is not none and not (renamer.parsed.movie and renamer.parsed.movie.year) %}"
+    template: |
+      {% if renamer.parsed.show and renamer.parsed.show.name %}SHOW: {{ renamer.parsed.show.name }} S{{ '%02d' | format(renamer.parsed.show.season) }}E{{ '%02d' | format(renamer.parsed.show.episode) }}
+      {% if tmdb and tmdb.episode %}TMDb Episode: {{ tmdb.episode.name }}{% endif %}
+      {% if tvdb and tvdb.episode %}TVDb: {{ tvdb.episode.name }}{% endif %}
+      {% if tvmaze and tvmaze.episode %}TVMaze: {{ tvmaze.episode.name }}{% endif %}{% endif %}
   
-  # Query'ler (where/print/save)
-  queries:
-    # Örnek 1: 8-bit + tek ses + kalite bazlı rapor
-    - name: "8bit Tek Ses - Kalite Bazlı"
-      loop:
-        var: q
-        in: globals.allVideoQualities
-      where: "videoBitDepth == 8 and audioCount == 1 and videoHeight == q"
-      print: "8-bit • {q}p => Count: {count} | Size: {sizeH}"
-      save: "/archive/8bit_videos/{q}p/"
-    
-    # Örnek 2: Sadece print (kaydetme)
-    - name: "2010+ Filmler Raporu"
-      where: "movieYear and movieYear >= globals.cutYear"
-      print: "2010+ Film: {count} adet | Toplam: {sizeH} | Ort. bitrate: {avgBitrateBps} bps"
-    
-    # Daha fazla örnek query için: query_templates/ klasörüne bak
-
-# ────────────────────────────────────────────────────────────────────────────
-# Summary (İşlem sonunda gösterilen özet)
-# ────────────────────────────────────────────────────────────────────────────
-summary:
-  print: |
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    📊 İşlem Özeti
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Toplam Dosya    : {total}
-    Başarılı        : {success}
-    Hata            : {failed}
-    Atlandı         : {skipped}
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    ⏱️  Süre Bilgisi
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Toplam Süre     : {total_time:.2f}s
-    Ortalama/Dosya  : {avg_time:.2f}s
-    En Hızlı        : {min_time:.2f}s
-    En Yavaş        : {max_time:.2f}s
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    📺 Son Öğe (TV/Film)
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Show            : {showName}
-    Original        : {originalShowName}
-    Season/Episode  : S{seasonNumber:02d}E{episodeNumber:02d}
-    Episode         : {episodeName}
-    Episode Air     : {episodeAirDate}
-    Episode Runtime : {episodeRuntime} min
-    Episode Rating  : {episodeVoteAverage}/10 ({episodeVoteCount} votes)
-    First Air       : {firstAirDate} ({firstAirYear})
-    Rating          : {voteAverage}/10 ({voteCount} votes)
-    Network         : {networkName}
-    Genre           : {genreName}
-    Seasons/Episodes: {numberOfSeasons}/{numberOfEpisodes}
-    Type            : {showType}
-    In Production   : {inProduction}
-    API             : {apiSource}
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    🎬 Extras (if fetched)
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    Cast/Crew       : {castCount} cast / {crewCount} crew | Director: {director}
-    Images          : {postersCount} posters / {backdropsCount} backdrops
-    Videos          : {trailersCount} trailers / {teasersCount} teasers
-    Keywords        : {keywordsCount} total
-    IMDB ID         : {imdbId}
-    TVDB ID         : {tvdbId}
-    Content Rating  : {contentRatingUS}
+  - name: "print_mock"
+    type: "print"
+    condition: "{% if mock_test.mock_data %}"
+    template: |
+      Mock Test: {{ mock_test.mock_data.test_field }}
+  
+  - name: "print_variable_test"
+    type: "print"
+    condition: "{% if tmdb and tmdb.movie %}"
+    template: |
+      Variable Tests:
+      - UPPERCASE: {{ tmdb.movie.name | upper }}
+      - lowercase: {{ tmdb.movie.name | lower }}
+      - Title Case: {{ tmdb.movie.name | title }}
+      {% if tmdb.movie.genres %}- Genres (count): {{ tmdb.movie.genres | length }}
+      - Genres (join): {{ tmdb.movie.genres | join(', ') }}{% endif %}
+  
+  - name: "print_extras"
+    type: "print"
+    template: |
+      {% if tvdb and tvdb.extras %}TVDb Extras: {{ tvdb.extras | length }} items{% endif %}
+      {% if tvmaze and tvmaze.extras %}TVMaze Extras: {{ tvmaze.extras | length }} items{% endif %}
+      {% if omdb and omdb.movie and omdb.movie.awards %}OMDb Awards: {{ omdb.movie.awards }}{% endif %}
+  
+  - name: "print_plugins_status"
+    type: "print"
+    template: |
+      Plugins: Success={{ matchGlobals.success_plugins | length }}, Failed={{ matchGlobals.failed_plugins | length }}, Not Supported={{ matchGlobals.not_supported_plugins | length }}
+  
+  - name: "dump_api_response"
+    type: "print"
+    condition: "{% if globals.current_match == (globals.total_matches - 1) %}"
+    template: |
+      
+      ============================================================
+      FULL API RESPONSE DUMP
+      ============================================================
+      {{ items | tojson(indent=2) }}
+      
+      ============================================================
+      GLOBALS
+      ============================================================
+      {{ globals | tojson(indent=2) }}
+      ============================================================

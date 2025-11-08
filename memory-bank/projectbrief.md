@@ -1,40 +1,47 @@
 # Project Brief: archiverr
 
 ## Core Purpose
-Enterprise-grade media file organization system for archiving movies and TV series with automated TMDb metadata retrieval, FFprobe video analysis, and flexible YAML-driven renaming rules.
+Plugin-based media metadata enrichment and organization system with multi-API support (TMDb, TVDb, TVMaze, OMDb, FFprobe), Jinja2 templating, and task-driven execution model.
 
 ## Primary Goals
-1. **Automated Organization**: Parse filenames → Match TMDb → Rename/move with rich metadata
-2. **Flexibility**: YAML configuration with powerful variable engine and query system
-3. **Safety**: Dry-run mode, hardlink support, undo/redo capability
-4. **Performance**: Parallel processing for TMDb/FFprobe operations
-5. **Production Ready**: Structured logging, error handling, database persistence
+1. **Plugin Architecture**: Flat, discoverable plugin system with manifest-based configuration
+2. **Multi-API Support**: Comprehensive metadata from 4+ APIs with automatic fallback
+3. **Template-Driven**: Jinja2 templates for all output (print, save, conditional execution)
+4. **Flexibility**: YAML-driven tasks, per-match execution, dependency resolution
+5. **Production Ready**: Clean separation of concerns, no core dependencies on plugins
 
 ## Target Users
-- Media archivists managing large collections (TBs of content)
+- Media archivists managing large collections
 - Home server administrators (Plex/Jellyfin/Emby)
-- Content curators requiring consistent naming
-- Advanced users needing custom organization rules
+- Developers building media automation tools
+- Advanced users needing extensible metadata pipelines
 
 ## Key Features
-- **TMDb Integration**: Automatic metadata retrieval (movies/TV shows/episodes)
-- **FFprobe Analysis**: Video codec, resolution, audio tracks, subtitles
-- **Variable Engine**: Unified `{var:filter}` syntax for patterns
-- **Query Engine**: Conditional processing with `where`/`loop`/`save`
-- **NFO Support**: Kodi-compatible metadata + FFprobe cache
-- **Parallel Processing**: Configurable worker count for batch operations
-- **Structured Logging**: ISO8601 timestamps, component-based organization
-- **FastAPI Backend**: REST API for job management, history, undo/redo (planned)
+- **Plugin System**: Flat plugins/ directory, plugin.json manifests, auto-discovery
+- **Multi-API**: TMDb, TVDb, TVMaze, OMDb with unified response structure
+- **Jinja2 Engine**: Full template power with filters, conditions, variables
+- **Task System**: Per-match execution, conditional tasks, summary tasks
+- **Extras Support**: Dedicated extras.py modules for extended metadata (credits, images, videos)
+- **Clean Architecture**: Core system knows nothing about plugins, fully plugin-agnostic
+- **Dependency Resolution**: Topological sort, parallel execution groups
+
+## Architecture Philosophy
+**Plugin-Agnostic Core**:
+- Core cannot import plugin-specific types
+- Plugins define their own data structures
+- Config.yml is opaque dict to core
+- Plugin.json declares: category, depends_on, expects
 
 ## Non-Goals
 - Video transcoding/conversion
 - Torrent client integration
 - Media playback
-- Duplicate detection (separate tool domain)
+- Duplicate detection
+- Plugin package management (manual installation)
 
 ## Success Criteria
-- Process 1000+ files without errors
-- Sub-second per-file processing (with cache)
-- Zero data loss (dry-run + hardlink safety)
-- Clear error reporting with actionable messages
-- API-driven architecture for UI integration
+- Process 100+ files without errors
+- Clean plugin isolation (no cross-plugin imports)
+- Template rendering <10ms per match
+- API response structure fully normalized
+- Error handling without silent failures

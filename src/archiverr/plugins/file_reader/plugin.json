@@ -1,0 +1,7 @@
+{
+  "name": "file_reader",
+  "version": "1.0.0",
+  "category": "input",
+  "depends_on": [],
+  "expects": []
+}

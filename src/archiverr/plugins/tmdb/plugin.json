@@ -1,0 +1,7 @@
+{
+  "name": "tmdb",
+  "version": "1.0.0",
+  "category": "output",
+  "depends_on": ["ffprobe", "renamer"],
+  "expects": ["renamer.parsed"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "ffprobe",
+  "version": "1.0.0",
+  "category": "output",
+  "depends_on": ["scanner"],
+  "expects": ["input"]
+}

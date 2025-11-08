@@ -1,0 +1,7 @@
+{
+  "name": "tvmaze",
+  "version": "1.0.0",
+  "category": "output",
+  "depends_on": ["renamer"],
+  "expects": ["renamer.parsed"]
+}
