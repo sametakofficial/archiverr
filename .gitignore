@@ -80,6 +80,8 @@ do-not-read.md
 
 reports
 
+memory-bank/*
+./memory-bank
 memory-bank
 
 logs/*
