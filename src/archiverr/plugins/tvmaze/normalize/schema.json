@@ -1,0 +1,30 @@
+{
+  "show": {
+    "media_type": "show",
+    "identifiers": {
+      "tvmaze_id": "$.id"
+    },
+    "title": {
+      "primary": "$.name",
+      "original": "$.name"
+    },
+    "air_dates": {
+      "first": "$.premiered",
+      "last": "$.ended",
+      "year": "$.premiered[:4]"
+    },
+    "status": "$.status",
+    "runtime": "$.runtime",
+    "ratings": {
+      "tvmaze": {
+        "score": "$.rating.average"
+      }
+    },
+    "genres": "$.genres[]",
+    "network": {
+      "name": "$.network.name",
+      "id": "$.network.id",
+      "country": "$.network.country.code"
+    }
+  }
+}

@@ -2,6 +2,7 @@
   "name": "renamer",
   "version": "1.0.0",
   "category": "output",
+  "categories": ["movie", "show"],
   "depends_on": [],
   "expects": ["input"]
 }

@@ -2,17 +2,20 @@
 from typing import Dict, Any
 import requests
 from datetime import datetime
+from .normalize.normalizer import OMDbNormalizer
 from archiverr.utils.debug import get_debugger
+from archiverr.plugins.base import OutputPlugin
 
 
-class OMDbPlugin:
+class OMDbPlugin(OutputPlugin):
     """Output plugin that fetches metadata from OMDb API"""
     
     def __init__(self, config: Dict[str, Any]):
-        self.config = config
+        super().__init__(config)
         self.name = "omdb"
-        self.category = "output"
         self.api_key = config.get('api_key', '')
+        self.include_raw = config.get('include-raw', False)  # Default: no raw data
+        self.normalizer = OMDbNormalizer()
         self.debugger = get_debugger()
     
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -69,22 +72,23 @@ class OMDbPlugin:
                 data = response.json()
                 
                 if data.get('Response') == 'True':
-                    result['movie'] = {
-                        'name': data.get('Title'),
-                        'year': data.get('Year'),
-                        'rated': data.get('Rated'),
-                        'runtime': data.get('Runtime'),
-                        'genre': data.get('Genre'),
-                        'director': data.get('Director'),
-                        'actors': data.get('Actors'),
-                        'plot': data.get('Plot'),
-                        'imdb_rating': data.get('imdbRating'),
-                        'imdb_id': data.get('imdbID'),
-                        'box_office': data.get('BoxOffice'),
-                        'awards': data.get('Awards')
-                    }
+                    # Normalize (DEFAULT OUTPUT)
+                    normalized_movie = self.normalizer.normalize_movie(data)
+                    result['movie'] = normalized_movie
+                    
+                    # Add RAW data ONLY if requested (ALL OMDb fields)
+                    if self.include_raw:
+                        result['raw'] = {
+                            'movie': data  # Complete raw response
+                        }
+                    
                     result['status']['success'] = True
+                    
+                    # Add validation
+                    result['validation'] = self._perform_validation(match_data, data)
+                    
                     self.debugger.info("omdb", "Movie found", title=data.get('Title'), imdb_rating=data.get('imdbRating'))
+                    self.debugger.debug("omdb", "Movie normalized", imdb_id=data.get('imdbID'), title=normalized_movie['title']['primary'], include_raw=self.include_raw)
                 else:
                     # Movie not found in OMDb - this is expected, not an error
                     result['status']['success'] = True  # Still success, just no data
@@ -104,18 +108,18 @@ class OMDbPlugin:
                 data = response.json()
                 
                 if data.get('Response') == 'True':
-                    result['show'] = {
-                        'name': data.get('Title'),
-                        'year': data.get('Year'),
-                        'genre': data.get('Genre'),
-                        'actors': data.get('Actors'),
-                        'plot': data.get('Plot'),
-                        'imdb_rating': data.get('imdbRating'),
-                        'imdb_id': data.get('imdbID'),
-                        'total_seasons': data.get('totalSeasons'),
-                        'awards': data.get('Awards')
-                    }
+                    # Normalize (DEFAULT OUTPUT)
+                    normalized_show = self.normalizer.normalize_show(data)
+                    result['show'] = normalized_show
+                    
+                    # Add RAW data ONLY if requested (ALL OMDb fields)
+                    if self.include_raw:
+                        result['raw'] = {
+                            'show': data  # Complete raw response
+                        }
+                    
                     result['status']['success'] = True
+                    self.debugger.debug("omdb", "TV show normalized", imdb_id=data.get('imdbID'), title=normalized_show['title']['primary'], include_raw=self.include_raw)
                 else:
                     # Show not found in OMDb - this is expected, not an error
                     result['status']['success'] = True  # Still success, just no data
@@ -129,6 +133,51 @@ class OMDbPlugin:
         result['status']['duration_ms'] = int((end_time - start_time).total_seconds() * 1000)
         
         return result
+    
+    def _perform_validation(self, match_data: Dict[str, Any], omdb_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform validation tests (duration matching)
+        
+        Returns:
+            {tests_passed, tests_total, details}
+        """
+        tests = {}
+        tests_passed = 0
+        tests_total = 0
+        
+        # Duration validation
+        ffprobe_data = match_data.get('ffprobe', {})
+        container = ffprobe_data.get('container', {})
+        ffprobe_duration = container.get('duration', 0)
+        
+        if ffprobe_duration > 0:
+            # Parse runtime from OMDb ("120 min" -> 120)
+            runtime_str = omdb_data.get('Runtime', '')
+            runtime_minutes = None
+            
+            if runtime_str and 'min' in runtime_str:
+                try:
+                    runtime_minutes = int(runtime_str.replace('min', '').strip())
+                except (ValueError, AttributeError):
+                    pass
+            
+            # Perform validation
+            validation_result = self._validate_duration(
+                ffprobe_duration,
+                runtime_minutes,
+                tolerance_seconds=600  # 10 minutes
+            )
+            
+            tests['duration_match'] = validation_result.details
+            tests_total += 1
+            if validation_result.passed:
+                tests_passed += 1
+        
+        return {
+            'tests_passed': tests_passed,
+            'tests_total': tests_total,
+            'details': tests
+        }
     
     def _not_supported_result(self) -> Dict[str, Any]:
         """Return not supported result"""

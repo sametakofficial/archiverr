@@ -2,38 +2,56 @@
 import sys
 import yaml
 from pathlib import Path
+from datetime import datetime
 
-from archiverr.core.plugin_system import (
+from archiverr.core.plugins import (
     PluginDiscovery,
     PluginLoader,
     DependencyResolver,
     PluginExecutor
 )
 from archiverr.models import APIResponseBuilder
-from archiverr.core.task_system import TemplateManager, TaskManager
+from archiverr.core.tasks import TemplateManager, TaskManager
+from archiverr.core.reports import generate_dual_reports
 from archiverr.utils.debug import init_debugger, get_debugger
+from archiverr.core.config_validator import ConfigValidator
 
 
 def main():
     """Main entry point"""
+    # Record start time (single timestamp for entire execution)
+    start_time = datetime.now()
+    
     config_path = Path("config.yml")
     
     if not config_path.exists():
-        print("ERROR: config.yml not found")
+        print("ERROR: config.yml not found", file=sys.stderr)
         sys.exit(1)
     
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
     except Exception as e:
-        print(f"ERROR: Failed to load config.yml: {e}")
+        # Pre-debug error - use print
+        print(f"ERROR: Failed to load config.yml: {e}", file=sys.stderr)
         sys.exit(1)
     
+    # Initialize debug system
     debug = config.get('options', {}).get('debug', False)
     dry_run = config.get('options', {}).get('dry_run', True)
-    
-    # Initialize debug system
     debugger = init_debugger(enabled=debug)
+    
+    # Validate config structure
+    validator = ConfigValidator()
+    if validator.is_available():
+        is_valid, error_msg = validator.validate(config)
+        if not is_valid:
+            debugger.error("config", "Invalid configuration", error=error_msg)
+            sys.exit(1)
+        debugger.debug("config", "Configuration validated")
+    else:
+        debugger.debug("config", "Schema validation unavailable (jsonschema not installed)")
+    
     debugger.info("system", "Archiverr starting", debug=debug, dry_run=dry_run)
     
     # Phase 1: Discover plugins
@@ -61,7 +79,6 @@ def main():
             debugger.debug("resolver", f"Group {i}", plugins=", ".join(group))
     except ValueError as e:
         debugger.error("resolver", "Dependency resolution failed", error=str(e))
-        print(f"ERROR: {e}")
         sys.exit(1)
     
     # Phase 4: Execute input plugins
@@ -71,15 +88,14 @@ def main():
     
     if not input_matches:
         debugger.warn("executor", "No matches found")
-        print("No matches found")
         sys.exit(0)
     
     debugger.info("executor", "Input plugins complete", matches=len(input_matches))
-    print(f"Found {len(input_matches)} targets")
     
     # Phase 5: Execute output plugins and tasks for each match
     processed_matches = []
     all_task_results = []
+    match_task_results = {}  # Track task results per match {index: [results]}
     
     template_manager = TemplateManager()
     task_manager = TaskManager(config, template_manager)
@@ -114,11 +130,12 @@ def main():
         # If all enabled output plugins finished, execute tasks for this match
         if total_plugins_run == len(output_plugins):
             # Build incremental API response for task execution
-            temp_api_response = builder.build(processed_matches)
-            
-            # Add total_matches to globals for condition checking
-            temp_api_response['globals']['total_matches'] = len(input_matches)
-            temp_api_response['globals']['current_match'] = index
+            temp_api_response = builder.build(
+                processed_matches,
+                config=config,
+                start_time=start_time,
+                loaded_plugins=all_plugins
+            )
             
             # Execute tasks for this match
             debugger.debug("tasks", f"Executing tasks for match {index}")
@@ -128,14 +145,59 @@ def main():
                 dry_run
             )
             all_task_results.extend(task_results)
+            match_task_results[index] = task_results
             debugger.debug("tasks", f"Tasks complete for match {index}", executed=len(task_results))
     
     # Phase 6: Build final API response
     debugger.debug("system", "Building final API response")
-    api_response = builder.build(processed_matches)
+    api_response = builder.build(
+        processed_matches,
+        config=config,
+        start_time=start_time,
+        loaded_plugins=all_plugins
+    )
+    
+    # Phase 6.1: Add task results to match.tasks
+    for match_index, task_results_list in match_task_results.items():
+        if match_index < len(api_response['matches']):
+            match = api_response['matches'][match_index]
+            
+            # Format task results for storage
+            formatted_tasks = []
+            
+            for task_result in task_results_list:
+                task_entry = {
+                    'name': task_result.get('task_name'),
+                    'type': task_result.get('type'),
+                    'success': task_result.get('success', True)
+                }
+                
+                # Add type-specific fields
+                if task_result.get('type') == 'print':
+                    task_entry['rendered'] = task_result.get('output')
+                elif task_result.get('type') == 'save':
+                    task_entry['source'] = task_result.get('source')
+                    task_entry['destination'] = task_result.get('destination')
+                    task_entry['dry_run'] = task_result.get('dry_run', True)
+                
+                formatted_tasks.append(task_entry)
+            
+            # Update match.tasks (root level, not in globals.output)
+            match['tasks'] = formatted_tasks
     
     # Update globals with task count
     api_response['globals']['status']['tasks'] = len(all_task_results)
+    
+    # Phase 7: Generate dual reports (full + compact + debug log)
+    debugger.debug("system", "Generating API response reports")
+    timestamp = start_time.strftime("%Y%m%d_%H%M%S")
+    report_paths = generate_dual_reports(api_response, timestamp, debugger=debugger)
+    
+    # Log report paths
+    debugger.debug("system", "Reports generated", 
+                  full=report_paths['full'], 
+                  compact=report_paths['compact'],
+                  debug_log=report_paths.get('debug_log', 'N/A'))
     
     debugger.info("system", "Archiverr complete", 
                  matches=len(processed_matches),

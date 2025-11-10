@@ -9,13 +9,15 @@ Media collections grow chaotic without consistent naming and organization:
 - No way to undo bulk operations
 
 ## Solution
-Declarative YAML configuration system that:
-1. Parses any filename format (regex-based)
-2. Queries TMDb for accurate metadata
-3. Analyzes video files with FFprobe
-4. Applies user-defined templates with variables/filters
-5. Executes rename/move operations safely
-6. Logs all changes for undo capability
+Plugin-based metadata enrichment system that:
+1. Discovers files via scanner/file-reader plugins
+2. Parses filenames with renamer plugin
+3. Analyzes video files with FFprobe plugin
+4. Queries multiple APIs (TMDb, TVDb, TVMaze, OMDb) for metadata
+5. Executes user-defined tasks via Jinja2 templates
+6. Generates dual reports (full + compact)
+7. Validates plugin execution via expects system
+8. Provides AI-readable structure views
 
 ## User Experience Flow
 
@@ -53,21 +55,30 @@ rename:
 ## Value Proposition
 - **Time Savings**: Bulk operations instead of manual work
 - **Consistency**: Enforced naming standards across collection
-- **Flexibility**: Change rules without code changes
+- **Flexibility**: YAML config + Jinja2 templates
 - **Safety**: Dry-run mode prevents mistakes
-- **Metadata Rich**: TMDb + FFprobe data in filenames/NFOs
-- **Scalability**: Parallel processing for large batches
+- **Metadata Rich**: 4 API sources (TMDb, TVDb, TVMaze, OMDb) + FFprobe
+- **Scalability**: Parallel plugin execution
+- **Extensibility**: Plugin-agnostic architecture
+- **AI-Friendly**: Compact reports for normalization analysis
+- **Production Ready**: Clean architecture, zero technical debt
 
 ## Competitive Landscape
 - **FileBot**: Java-based, subscription model, less flexible
 - **Sonarr/Radarr**: Focused on download automation, not reorganization
 - **Manual Scripts**: Brittle, hard to maintain, no metadata integration
-- **archiverr Advantage**: YAML flexibility + TMDb + FFprobe + Parallel + API-first
+- **archiverr Advantage**: 
+  - Multi-API support (4 providers)
+  - Plugin-agnostic architecture
+  - Expects-based execution
+  - Compact reports for AI
+  - Clean separation of concerns
+  - Production ready
 
 ## Future Vision
+- MongoDB integration (architecture ready)
+- Plugin normalization improvements
 - Web UI for configuration and monitoring
-- Database-backed operation history
-- Undo/redo with diff visualization
-- Custom metadata sources (IMDB, Trakt, etc.)
-- Plugin system for extensibility
-- Multi-user support with permissions
+- Advanced branching (Git-like versioning)
+- Unit tests and validation
+- Plugin marketplace

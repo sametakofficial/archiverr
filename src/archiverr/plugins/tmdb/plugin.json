@@ -2,6 +2,7 @@
   "name": "tmdb",
   "version": "1.0.0",
   "category": "output",
+  "categories": ["movie", "show"],
   "class_name": "TMDbPlugin",
   "depends_on": ["renamer"],
   "expects": ["renamer.parsed"]

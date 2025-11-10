@@ -1,199 +1,116 @@
-# Archiverr Configuration - Endpoint-Based Extras System
-
 options:
-  debug: false
+  debug: true
   dry_run: true
   hardlink: true
-
 plugins:
-  scanner:
-    enabled: true
-    targets:
-      - "/home/samet/torrents/Mr. & Mrs. Smith (2005) BluRay 1080p DDP5.1 H.265 TSRG.mkv"
-    recursive: false
-  
-  file_reader:
-    enabled: true
-    allow_virtual_paths: true
-    targets:
-      - "/media/shows/Breaking Bad S01E01.mkv"
-  
   ffprobe:
     enabled: true
     timeout: 15
-  
+  file-reader:
+    allow_virtual_paths: true
+    enabled: true
+    targets:
+    - /media/shows/Breaking Bad S01E01.mkv
+  mock-test:
+    enabled: false
+  omdb:
+    api_key: 3aed01a3
+    enabled: true
+    include-raw: true
   renamer:
     enabled: true
-    media_type: "auto"
-  
-  # TMDb - All Endpoint Testing
+    media_type: auto
+  scanner:
+    enabled: true
+    recursive: false
+    targets:
+    - /home/samet/torrents/Mr. & Mrs. Smith (2005) BluRay 1080p DDP5.1 H.265 TSRG.mkv
   tmdb:
+    api_key: ac7d9e25e603a7167f183ed446b58e8f
     enabled: true
-    api_key: "ac7d9e25e603a7167f183ed446b58e8f"
-    language: "tr-TR"
     extras:
-      # TV Show Endpoints
-      tv_credits: true            # GET /tv/{tv_id}/credits
-      tv_images: true             # GET /tv/{tv_id}/images
-      tv_videos: true             # GET /tv/{tv_id}/videos
-      tv_keywords: true           # GET /tv/{tv_id}/keywords
-      # TV Season Endpoints
-      tv_season_images: true      # GET /tv/{tv_id}/season/{season_number}/images
-      # TV Episode Endpoints
-      tv_episode_credits: true    # GET /tv/{tv_id}/season/{season}/episode/{episode}/credits
-      tv_episode_images: true     # GET /tv/{tv_id}/season/{season}/episode/{episode}/images
-      # Movie Endpoints
-      movie_credits: true         # GET /movie/{movie_id}/credits
-      movie_images: true          # GET /movie/{movie_id}/images
-      movie_videos: true          # GET /movie/{movie_id}/videos
-      movie_keywords: true        # GET /movie/{movie_id}/keywords
-  
-  # TVDb - All Endpoint Testing
+      movie_credits: true
+      movie_images: true
+      movie_keywords: true
+      movie_videos: true
+      tv_credits: true
+      tv_episode_credits: true
+      tv_episode_images: true
+      tv_images: true
+      tv_keywords: true
+      tv_season_images: true
+      tv_videos: true
+    include-raw: true
+    language: tr-TR
   tvdb:
+    api_key: ac27b346-7bec-4667-a4c9-51c82525c461
     enabled: true
-    api_key: "ac27b346-7bec-4667-a4c9-51c82525c461"
     extras:
-      # TV Series Endpoints
-      series_extended: true       # GET /series/{id}/extended
-      series_artworks: true       # GET /series/{id}/artworks
-      # TV Season Endpoints
-      seasons_extended: true      # GET /seasons/{id}/extended
-      # TV Episode Endpoints
-      episodes_extended: true     # GET /episodes/{id}/extended
-      # Movie Endpoints
-      movies_extended: true       # GET /movies/{id}/extended
-      # Global Endpoints
-      tags_options: false         # GET /tags/options (global, not item-specific)
-  
-  omdb:
-    enabled: true
-    api_key: "3aed01a3"
-  
-  # TVMaze - All Endpoint Testing
+      episodes_extended: true
+      movies_extended: true
+      seasons_extended: true
+      series_artworks: true
+      series_extended: true
+      tags_options: true
+    include-raw: true
   tvmaze:
     enabled: true
     extras:
-      # TV Show Endpoints
-      shows_cast: true            # GET /shows/{id}/cast
-      shows_crew: true            # GET /shows/{id}/crew
-      shows_images: true          # GET /shows/{id}/images
-      shows_episodes: false       # GET /shows/{id}/episodes (too much data for testing)
-      shows_seasons: false        # GET /shows/{id}/seasons (too much data for testing)
-      # Episode Endpoints
-      episodes_single: true       # GET /episodes/{id}
-      episodes_guestcast: true    # GET /episodes/{id}/guestcast
-      episodes_guestcrew: true    # GET /episodes/{id}/guestcrew
-  
-  mock_test:
-    enabled: false
-
+      episodes_guestcast: true
+      episodes_guestcrew: true
+      episodes_single: true
+      shows_cast: true
+      shows_crew: true
+      shows_episodes: true
+      shows_images: true
+      shows_seasons: true
+    include-raw: true
 tasks:
-  - name: "print_match_header"
-    type: "print"
-    template: |
-      
-      ========== MATCH {{ index }} ==========
-  
-  - name: "print_input"
-    type: "print"
-    template: |
-      {% if matchGlobals and matchGlobals.input %}Input: {{ matchGlobals.input.path }}{% if matchGlobals.input.virtual %} (virtual){% endif %} [{{ matchGlobals.input.category|upper }}]{% endif %}
-  
-  - name: "print_renamer"
-    type: "print"
-    template: |
-      {% if renamer and renamer.category == 'movie' %}MOVIE: {{ renamer.parsed.movie.name }} ({{ renamer.parsed.movie.year }}){% elif renamer and renamer.category == 'show' %}SHOW: {{ renamer.parsed.show.name }} S{{ '%02d' | format(renamer.parsed.show.season) }}E{{ '%02d' | format(renamer.parsed.show.episode) }}{% endif %}
-  
-  - name: "detailed_endpoint_test"
-    type: "print"
-    template: |
-      
-      ╔══════════════════════════════════════════════════════════════╗
-      ║            DETAILED ENDPOINT TEST REPORT                    ║
-      ╚══════════════════════════════════════════════════════════════╝
-      
-      {% if tmdb and tmdb.status and tmdb.status.success %}
-      ┌─────────────────────────────────────────────────────────────┐
-      │ TMDb Plugin                                           [✓ OK]│
-      └─────────────────────────────────────────────────────────────┘
-        
-        ► Base Endpoints:
-      {% if tmdb.movie %}    • GET /movie/{id}                         ✓ {{ tmdb.movie.name }} ({{ tmdb.movie.vote_average }}/10){% endif %}
-      {% if tmdb.show %}    • GET /tv/{id}                            ✓ {{ tmdb.show.name }} ({{ tmdb.show.vote_average }}/10){% endif %}
-      {% if tmdb.season %}    • GET /tv/{id}/season/{n}                ✓ {{ tmdb.season.name }}{% endif %}
-      {% if tmdb.episode %}    • GET /tv/{id}/season/{s}/episode/{e}    ✓ {{ tmdb.episode.name }}{% endif %}
-        
-        ► Extras Endpoints:
-      {% if tmdb.extras.movie_credits %}    • GET /movie/{id}/credits                ✓ {{ tmdb.extras.movie_credits.cast|length if tmdb.extras.movie_credits.cast else 0 }} cast, {{ tmdb.extras.movie_credits.crew|length if tmdb.extras.movie_credits.crew else 0 }} crew{% endif %}
-      {% if tmdb.extras.movie_images %}    • GET /movie/{id}/images                 ✓ {{ (tmdb.extras.movie_images.posters|length if tmdb.extras.movie_images.posters else 0) + (tmdb.extras.movie_images.backdrops|length if tmdb.extras.movie_images.backdrops else 0) }} images{% endif %}
-      {% if tmdb.extras.movie_videos %}    • GET /movie/{id}/videos                 ✓ {{ tmdb.extras.movie_videos.results|length if tmdb.extras.movie_videos.results else 0 }} videos{% endif %}
-      {% if tmdb.extras.movie_keywords %}    • GET /movie/{id}/keywords               ✓ {{ tmdb.extras.movie_keywords.keywords|length if tmdb.extras.movie_keywords.keywords else 0 }} keywords{% endif %}
-      {% if tmdb.extras.tv_credits %}    • GET /tv/{id}/credits                   ✓ {{ tmdb.extras.tv_credits.cast|length if tmdb.extras.tv_credits.cast else 0 }} cast, {{ tmdb.extras.tv_credits.crew|length if tmdb.extras.tv_credits.crew else 0 }} crew{% endif %}
-      {% if tmdb.extras.tv_images %}    • GET /tv/{id}/images                    ✓ {{ (tmdb.extras.tv_images.posters|length if tmdb.extras.tv_images.posters else 0) + (tmdb.extras.tv_images.backdrops|length if tmdb.extras.tv_images.backdrops else 0) }} images{% endif %}
-      {% if tmdb.extras.tv_videos %}    • GET /tv/{id}/videos                    ✓ {{ tmdb.extras.tv_videos.results|length if tmdb.extras.tv_videos.results else 0 }} videos{% endif %}
-      {% if tmdb.extras.tv_keywords %}    • GET /tv/{id}/keywords                  ✓ {{ tmdb.extras.tv_keywords.results|length if tmdb.extras.tv_keywords.results else 0 }} keywords{% endif %}
-      {% if tmdb.extras.tv_season_images %}    • GET /tv/{id}/season/{n}/images         ✓ {{ tmdb.extras.tv_season_images.posters|length if tmdb.extras.tv_season_images.posters else 0 }} posters{% endif %}
-      {% if tmdb.extras.tv_episode_credits %}    • GET /tv/{id}/season/{s}/episode/{e}/credits ✓ {{ (tmdb.extras.tv_episode_credits.cast|length if tmdb.extras.tv_episode_credits.cast else 0) + (tmdb.extras.tv_episode_credits.guest_stars|length if tmdb.extras.tv_episode_credits.guest_stars else 0) }} people{% endif %}
-      {% if tmdb.extras.tv_episode_images %}    • GET /tv/{id}/season/{s}/episode/{e}/images  ✓ {{ tmdb.extras.tv_episode_images.stills|length if tmdb.extras.tv_episode_images.stills else 0 }} stills{% endif %}
-      {% endif %}
-      
-      {% if tvdb and tvdb.status and tvdb.status.success %}
-      ┌─────────────────────────────────────────────────────────────┐
-      │ TVDb Plugin                                           [✓ OK]│
-      └─────────────────────────────────────────────────────────────┘
-        
-        ► Base Endpoints:
-      {% if tvdb.movie %}    • GET /movies/{id}                        ✓ {{ tvdb.movie.name }}{% endif %}
-      {% if tvdb.show %}    • GET /series/{id}                        ✓ {{ tvdb.show.name }}{% endif %}
-      {% if tvdb.season %}    • GET /seasons/{id}                       ✓ Season {{ tvdb.season.number }}{% endif %}
-      {% if tvdb.episode %}    • GET /episodes/{id}                      ✓ {{ tvdb.episode.name }}{% endif %}
-        
-        ► Extras Endpoints:
-      {% if tvdb.extras.movies_extended %}    • GET /movies/{id}/extended               ✓ Extended data available{% endif %}
-      {% if tvdb.extras.series_extended %}    • GET /series/{id}/extended               ✓ Extended data available{% endif %}
-      {% if tvdb.extras.series_artworks %}    • GET /series/{id}/artworks               ✓ Artworks available{% endif %}
-      {% if tvdb.extras.seasons_extended %}    • GET /seasons/{id}/extended              ✓ Extended data available{% endif %}
-      {% if tvdb.extras.episodes_extended %}    • GET /episodes/{id}/extended             ✓ Extended data available{% endif %}
-      {% endif %}
-      
-      {% if tvmaze and tvmaze.status and tvmaze.status.success %}
-      ┌─────────────────────────────────────────────────────────────┐
-      │ TVMaze Plugin                                         [✓ OK]│
-      └─────────────────────────────────────────────────────────────┘
-        
-        ► Base Endpoints:
-      {% if tvmaze.show %}    • GET /shows/{id}                         ✓ {{ tvmaze.show.name }}{% endif %}
-      {% if tvmaze.episode %}    • GET /shows/{id}/episodebynumber        ✓ {{ tvmaze.episode.name }}{% endif %}
-        
-        ► Extras Endpoints:
-      {% if tvmaze.extras.shows_cast %}    • GET /shows/{id}/cast                    ✓ {{ tvmaze.extras.shows_cast|length if tvmaze.extras.shows_cast else 0 }} cast members{% endif %}
-      {% if tvmaze.extras.shows_crew %}    • GET /shows/{id}/crew                    ✓ {{ tvmaze.extras.shows_crew|length if tvmaze.extras.shows_crew else 0 }} crew members{% endif %}
-      {% if tvmaze.extras.shows_images %}    • GET /shows/{id}/images                  ✓ {{ tvmaze.extras.shows_images|length if tvmaze.extras.shows_images else 0 }} images{% endif %}
-      {% if tvmaze.extras.episodes_single %}    • GET /episodes/{id}                      ✓ Episode data available{% endif %}
-      {% if tvmaze.extras.episodes_guestcast %}    • GET /episodes/{id}/guestcast            ✓ {{ tvmaze.extras.episodes_guestcast|length if tvmaze.extras.episodes_guestcast else 0 }} guests{% endif %}
-      {% if tvmaze.extras.episodes_guestcrew %}    • GET /episodes/{id}/guestcrew            ✓ {{ tvmaze.extras.episodes_guestcrew|length if tvmaze.extras.episodes_guestcrew else 0 }} crew{% endif %}
-      {% endif %}
-      
-      {% if omdb and omdb.status and omdb.status.success %}
-      ┌─────────────────────────────────────────────────────────────┐
-      │ OMDb Plugin                                           [✓ OK]│
-      └─────────────────────────────────────────────────────────────┘
-        
-        ► Base Endpoints:
-      {% if omdb.movie %}    • GET /?i={imdb_id}&type=movie            ✓ {{ omdb.movie.name }} (IMDb: {{ omdb.movie.imdb_rating }}/10){% endif %}
-      {% if omdb.show %}    • GET /?i={imdb_id}&type=series           ✓ {{ omdb.show.name }} (IMDb: {{ omdb.show.imdb_rating }}/10){% endif %}
-      {% endif %}
-      
-      ╚══════════════════════════════════════════════════════════════╝
-  
-  - name: "print_summary"
-    type: "print"
-    condition: "{% if globals.current_match == (globals.total_matches - 1) %}"
-    template: |
-      
-      ============================================================
-      ENDPOINT TEST SUMMARY
-      ============================================================
-      Total Matches: {{ globals.status.matches }}
-      Success Rate: {{ globals.status.success }}
-      ============================================================
+- name: print_match_header
+  template: '
+
+    ========== MATCH {{ index }} ==========
+
+    '
+  type: print
+- name: print_input
+  template: '{% if match_globals and match_globals.input %}Input: {{ match_globals.input.path
+    }}{% if match_globals.input.virtual %} (virtual){% endif %} [{{ match_globals.input.category|upper
+    }}]{% endif %}
+
+    '
+  type: print
+- name: print_renamer
+  template: '{% if renamer and renamer.category == ''movie'' %}MOVIE: {{ renamer.parsed.movie.name
+    }} ({{ renamer.parsed.movie.year }}){% elif renamer and renamer.category == ''show''
+    %}SHOW: {{ renamer.parsed.show.name }} S{{ ''%02d'' | format(renamer.parsed.show.season)
+    }}E{{ ''%02d'' | format(renamer.parsed.show.episode) }}{% endif %}
+
+    '
+  type: print
+- external: true
+
+  name: detailed_metadata_check
+  path: tasks/metadata-checker.yml
+- external: true
+
+  name: dump_api_response
+  path: tasks/api-response-dump.yml
+- condition: '{{ index: == (count:matches - 1) }}'
+  name: print_summary
+  template: '
+
+    ============================================================
+
+    ENDPOINT TEST SUMMARY
+
+    ============================================================
+
+    Total Matches: {{ globals.status.matches }}
+
+    Success Rate: {{ globals.status.success }}
+
+    ============================================================
+
+    '
+  type: print

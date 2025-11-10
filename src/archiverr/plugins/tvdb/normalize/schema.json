@@ -1,0 +1,62 @@
+{
+  "movie": {
+    "media_type": "movie",
+    "identifiers": {
+      "tvdb_id": "$.data.id",
+      "imdb_id": "$.data.remoteIds[?(@.sourceName=='IMDB')].id",
+      "tmdb_id": "$.data.remoteIds[?(@.sourceName=='TheMovieDB.com')].id"
+    },
+    "title": {
+      "primary": "$.data.name",
+      "original": "$.data.name"
+    },
+    "release": {
+      "year": "$.data.year",
+      "status": "$.data.status.name"
+    },
+    "runtime": "$.data.runtime",
+    "ratings": {
+      "tvdb": {
+        "score": "$.data.score"
+      }
+    },
+    "genres": "$.data.genres[].name",
+    "people": {
+      "cast": "$.data.characters[?(@.type==3)]",
+      "crew": "$.data.characters[?(@.type!=3)]"
+    }
+  },
+  "show": {
+    "media_type": "show",
+    "identifiers": {
+      "tvdb_id": "$.data.id",
+      "imdb_id": "$.data.remoteIds[?(@.sourceName=='IMDB')].id",
+      "tmdb_id": "$.data.remoteIds[?(@.sourceName=='TheMovieDB.com')].id"
+    },
+    "title": {
+      "primary": "$.data.name",
+      "original": "$.data.name"
+    },
+    "air_dates": {
+      "first": "$.data.firstAired",
+      "last": "$.data.lastAired",
+      "year": "$.data.year"
+    },
+    "status": "$.data.status.name",
+    "runtime": "$.data.averageRuntime",
+    "ratings": {
+      "tvdb": {
+        "score": "$.data.score"
+      }
+    },
+    "genres": "$.data.genres[].name",
+    "network": {
+      "name": "$.data.network.name",
+      "id": "$.data.network.id"
+    },
+    "people": {
+      "cast": "$.data.characters[?(@.type==3)]",
+      "crew": "$.data.characters[?(@.type!=3)]"
+    }
+  }
+}

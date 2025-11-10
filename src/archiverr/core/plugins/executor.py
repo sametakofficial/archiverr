@@ -1,8 +1,10 @@
 """Plugin Executor - Execute plugins with parallel support"""
 import asyncio
 import time
-from typing import Dict, List, Any
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from archiverr.utils.debug import get_debugger
 
 
@@ -193,7 +195,6 @@ class PluginExecutor:
                     failed_plugins.append(plugin_name)
         
         # Add status
-        from datetime import datetime
         now = datetime.now().isoformat()
         result['status'] = {
             'success_plugins': success_plugins,
@@ -246,7 +247,6 @@ class PluginExecutor:
     
     def _error_result(self) -> Dict[str, Any]:
         """Create error result structure"""
-        from datetime import datetime
         now = datetime.now().isoformat()
         return {
             'status': {
@@ -256,3 +256,4 @@ class PluginExecutor:
                 'duration_ms': 0
             }
         }
+    

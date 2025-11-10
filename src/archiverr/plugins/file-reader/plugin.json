@@ -1,0 +1,9 @@
+{
+  "name": "file-reader",
+  "version": "1.0.0",
+  "category": "input",
+  "categories": [],
+  "depends_on": [],
+  "expects": [],
+  "class_name": "FileReaderPlugin"
+}

@@ -1,0 +1,164 @@
+# External Task: Normalized Metadata Checker with Extras & Raw Data Verification
+# Usage in config.yml:
+#   - name: "check_metadata"
+#     external: true
+#     path: "tasks/metadata-checker.yml"
+
+type: "print"
+template: |
+  
+  ╔══════════════════════════════════════════════════════════════╗
+  ║         NORMALIZED METADATA VERIFICATION                    ║
+  ╚══════════════════════════════════════════════════════════════╝
+  
+  {% if tmdb and tmdb.status and tmdb.status.success %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TMDb Plugin - Community Standard Format              [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tmdb.movie %}
+    ► Movie Metadata:
+      • Title: {{ tmdb.movie.title.primary }}
+      • Original: {{ tmdb.movie.title.original }}
+      • Release: {{ tmdb.movie.release.year }} ({{ tmdb.movie.release.date }})
+      • Runtime: {{ tmdb.movie.runtime }} min
+      • Rating: {{ tmdb.movie.ratings.tmdb.score }}/10 ({{ tmdb.movie.ratings.tmdb.votes }} votes)
+      • Genres: {{ tmdb.movie.genres|join(', ') }}
+      • Overview: {{ tmdb.movie.overview[:80] }}...
+    {% if tmdb.movie.people %}
+    ► People:
+      • Cast: {{ tmdb.movie.people.cast|length }} members
+      • Crew: {{ tmdb.movie.people.crew|length }} members
+    {% endif %}
+    {% if tmdb.movie.images %}
+    ► Images:
+      • Posters: {{ tmdb.movie.images.posters|length }}
+      • Backdrops: {{ tmdb.movie.images.backdrops|length }}
+    {% endif %}
+    {% if tmdb.movie.videos %}
+    ► Videos: {{ tmdb.movie.videos|length }} trailers
+    {% endif %}
+    {% if tmdb.movie.keywords %}
+    ► Keywords: {{ tmdb.movie.keywords|length }} tags
+    {% endif %}
+    {% if tmdb.raw %}
+    ► Raw Data: ✓ Available
+    {% endif %}
+  {% endif %}
+  
+  {% if tmdb.show %}
+    ► Show Metadata:
+      • Title: {{ tmdb.show.title.primary }}
+      • Original: {{ tmdb.show.title.original }}
+      • Status: {{ tmdb.show.status }}
+      • First Air: {{ tmdb.show.air_dates.first }}
+      • Last Air: {{ tmdb.show.air_dates.last }}
+      • Rating: {{ tmdb.show.ratings.tmdb.score }}/10 ({{ tmdb.show.ratings.tmdb.votes }} votes)
+      • Seasons: {{ tmdb.show.seasons.total }}
+      • Episodes: {{ tmdb.show.episodes.total }}
+      • Genres: {{ tmdb.show.genres|join(', ') }}
+      • Runtime: {{ tmdb.show.runtime }} min
+    {% if tmdb.show.people %}
+    ► People:
+      • Cast: {{ tmdb.show.people.cast|length }} members
+      • Crew: {{ tmdb.show.people.crew|length }} members
+    {% endif %}
+    {% if tmdb.show.images %}
+    ► Images: Poster & Backdrop available
+    {% endif %}
+    {% if tmdb.raw %}
+    ► Raw Data: ✓ Available
+    {% endif %}
+  {% endif %}
+  {% endif %}
+  
+  {% if tvdb and tvdb.status and tvdb.status.success %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TVDb Plugin - Community Standard Format              [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tvdb.movie %}
+    ► Movie: {{ tvdb.movie.title.primary }}
+      • Year: {{ tvdb.movie.release.year }}
+      • Rating: TVDb {{ tvdb.movie.ratings.tvdb.score }}/10
+      • Genres: {{ tvdb.movie.genres|join(', ') }}
+    {% if tvdb.raw %}
+    ► Raw Data: ✓ Available
+      • Extended Info: {{ 'Yes' if tvdb.raw.extras and tvdb.raw.extras.movie_extended else 'No' }}
+    {% endif %}
+  {% endif %}
+  {% if tvdb.show %}
+    ► Show: {{ tvdb.show.title.primary }}
+      • First Air: {{ tvdb.show.air_dates.first }}
+      • Status: {{ tvdb.show.status }}
+      • Rating: TVDb {{ tvdb.show.ratings.tvdb.score }}/10
+      • Genres: {{ tvdb.show.genres|join(', ') }}
+    {% if tvdb.raw %}
+    ► Raw Data: ✓ Available
+      • Extended Info: {{ 'Yes' if tvdb.raw.extras and tvdb.raw.extras.series_extended else 'No' }}
+      • Artworks: {{ 'Yes' if tvdb.raw.extras and tvdb.raw.extras.series_artworks else 'No' }}
+    {% endif %}
+  {% endif %}
+  {% endif %}
+  
+  {% if omdb and omdb.status and omdb.status.success %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ OMDb Plugin - Community Standard Format              [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if omdb.movie %}
+    ► Movie: {{ omdb.movie.title.primary }}
+      • Year: {{ omdb.movie.release.year }}
+      • Rating: IMDb {{ omdb.movie.ratings.imdb.score }}/10
+      • Genres: {{ omdb.movie.genres|join(', ') }}
+    {% if omdb.movie.people and omdb.movie.people.actors %}
+      • Actors: {{ omdb.movie.people.actors|length }} listed
+    {% endif %}
+    {% if omdb.movie.people and omdb.movie.people.director %}
+      • Directors: {{ omdb.movie.people.director|length }} listed
+    {% endif %}
+    {% if omdb.movie.awards %}
+      • Awards: {{ omdb.movie.awards[:50] }}...
+    {% endif %}
+    {% if omdb.raw %}
+    ► Raw Data: ✓ Available
+    {% endif %}
+  {% endif %}
+  {% if omdb.show %}
+    ► Show: {{ omdb.show.title.primary }}
+      • Year: {{ omdb.show.air_dates.year }}
+      • Rating: IMDb {{ omdb.show.ratings.imdb.score }}/10
+      • Genres: {{ omdb.show.genres|join(', ') }}
+    {% if omdb.show.seasons and omdb.show.seasons.total %}
+      • Seasons: {{ omdb.show.seasons.total }}
+    {% endif %}
+    {% if omdb.show.people and omdb.show.people.actors %}
+      • Actors: {{ omdb.show.people.actors|length }} listed
+    {% endif %}
+    {% if omdb.show.awards %}
+      • Awards: {{ omdb.show.awards[:50] }}...
+    {% endif %}
+    {% if omdb.raw %}
+    ► Raw Data: ✓ Available
+    {% endif %}
+  {% endif %}
+  {% endif %}
+  
+  {% if tvmaze and tvmaze.status and tvmaze.status.success %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TVMaze Plugin - Community Standard Format            [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tvmaze.show %}
+    ► Show: {{ tvmaze.show.title.primary }}
+      • First Air: {{ tvmaze.show.air_dates.first }}
+      • Status: {{ tvmaze.show.status }}
+      • Rating: TVMaze {{ tvmaze.show.ratings.tvmaze.score }}/10
+      • Network: {{ tvmaze.show.network.name }} ({{ tvmaze.show.network.country }})
+      • Genres: {{ tvmaze.show.genres|join(', ') }}
+    {% if tvmaze.show.people %}
+    ► People:
+      • Cast: {{ tvmaze.show.people.cast|length }} members
+      • Crew: {{ tvmaze.show.people.crew|length }} members
+    {% endif %}
+    {% if tvmaze.raw %}
+    ► Raw Data: ✓ Available
+    {% endif %}
+  {% endif %}
+  {% endif %}

@@ -27,47 +27,52 @@ pyyaml>=6.0              # Config file parsing
 
 ```
 archiverr/
-├── config/
-│   └── config.yml                    # User configuration
+├── config.yml                       # User configuration
 ├── docs/
-│   ├── YAML_ENGINE.md               # Variable reference
+│   ├── API_MAPPING.md               # Variable reference
 │   └── TODO.md                      # Development tracking
-├── memory-bank/                     # Cline memory system
+├── memory-bank/                     # Agent memory system
 │   ├── projectbrief.md
 │   ├── productContext.md
 │   ├── systemPatterns.md
 │   ├── techContext.md
 │   ├── activeContext.md
 │   └── progress.md
-├── logs/                            # Structured log outputs
-│   └── report_YYYYMMDD-HHMMSS.json
+├── reports/                         # Generated reports
+│   ├── api_response_full_*.json     # Full API data
+│   └── api_response_compact_*.json  # Compact structure view
 ├── src/archiverr/
-│   ├── main.py                      # CLI entry point
+│   ├── __main__.py                  # CLI entry point
 │   ├── models/
-│   │   └── config.py                # Config dataclasses + loaders
+│   │   └── response_builder.py      # API response builder
 │   ├── core/
-│   │   ├── matching/
-│   │   │   └── matcher.py           # Filename parsing + TMDb matching
-│   │   ├── renamer/
-│   │   │   ├── engine.py            # Main orchestrator
-│   │   │   ├── path_builder.py      # Path generation logic
-│   │   │   ├── query_logger.py      # User-facing print logs
-│   │   │   ├── logger.py            # Legacy colored output
-│   │   │   └── operations.py        # File move/hardlink
-│   │   └── scanner/
-│   │       └── scanner.py           # Directory traversal
-│   ├── engines/
-│   │   └── yaml/
-│   │       ├── variable_engine.py   # Template rendering + filters
-│   │       └── engine.py            # Query execution
-│   ├── integrations/
-│   │   ├── tmdb/
-│   │   │   └── client.py            # TMDb API wrapper
-│   │   └── ffprobe/
-│   │       └── analyzer.py          # FFprobe subprocess wrapper
+│   │   ├── plugins/                 # Plugin discovery, loading, execution
+│   │   │   ├── __init__.py
+│   │   │   ├── discovery.py
+│   │   │   ├── loader.py
+│   │   │   ├── resolver.py
+│   │   │   └── executor.py
+│   │   ├── tasks/                   # Template rendering, task execution
+│   │   │   ├── __init__.py
+│   │   │   ├── template_manager.py
+│   │   │   └── task_manager.py
+│   │   └── reports/                 # Response simplification
+│   │       ├── __init__.py
+│   │       ├── response_simplifier.py
+│   │       └── report_generator.py
+│   ├── plugins/                     # ALL domain logic
+│   │   ├── base.py                  # BasePlugin, InputPlugin, OutputPlugin
+│   │   ├── scanner/                 # Input plugin
+│   │   ├── file_reader/             # Input plugin
+│   │   ├── ffprobe/                 # Output plugin
+│   │   ├── renamer/                 # Output plugin
+│   │   ├── tmdb/                    # Output plugin
+│   │   ├── tvdb/                    # Output plugin
+│   │   ├── tvmaze/                  # Output plugin
+│   │   └── omdb/                    # Output plugin
 │   └── utils/
-│       ├── structured_logger.py     # Production logging system
-│       └── nfo_writer.py            # Kodi NFO generation
+│       ├── debug.py                 # Debug logging system
+│       └── formatters.py            # Utility functions
 └── tests/
     └── targets.txt                  # Test file list
 ```

@@ -19,7 +19,9 @@ Usage in core:
 """
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
+from pathlib import Path
+import json
 
 
 class DebugSystem:
@@ -36,6 +38,7 @@ class DebugSystem:
     
     def __init__(self, enabled: bool = False):
         self.enabled = enabled
+        self.log_buffer: List[Dict[str, Any]] = []  # Always collect logs, regardless of debug mode
     
     def _timestamp(self) -> str:
         """ISO8601 timestamp with timezone"""
@@ -43,7 +46,7 @@ class DebugSystem:
     
     def _log(self, level: str, component: str, message: str, **fields):
         """
-        Emit structured debug line immediately to stderr.
+        Emit structured debug line immediately to stderr and save to buffer.
         
         Args:
             level: Log level (DEBUG, INFO, WARN, ERROR)
@@ -51,10 +54,22 @@ class DebugSystem:
             message: Log message
             **fields: Additional context fields
         """
+        ts = self._timestamp()
+        
+        # Always save to buffer (regardless of debug mode)
+        log_entry = {
+            "timestamp": ts,
+            "level": level,
+            "component": component,
+            "message": message,
+            "fields": {k: v for k, v in fields.items() if v is not None}
+        }
+        self.log_buffer.append(log_entry)
+        
+        # Only print to stderr if debug mode is enabled
         if not self.enabled:
             return
         
-        ts = self._timestamp()
         context = " ".join(f"{k}={v}" for k, v in fields.items() if v is not None)
         
         if context:
@@ -80,6 +95,39 @@ class DebugSystem:
     def error(self, component: str, message: str, **fields):
         """ERROR level - Error messages"""
         self._log("ERROR", component, message, **fields)
+    
+    def get_logs(self) -> List[Dict[str, Any]]:
+        """Get all collected logs"""
+        return self.log_buffer
+    
+    def export_logs(self, filepath: Path) -> None:
+        """
+        Export all collected logs to a JSON file.
+        
+        Args:
+            filepath: Path to save the log file
+        """
+        # Create parent directory if needed
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Prepare export data with metadata
+        export_data = {
+            "_metadata": {
+                "type": "debug_log",
+                "total_entries": len(self.log_buffer),
+                "debug_mode_was_enabled": self.enabled,
+                "exported_at": datetime.now(timezone.utc).astimezone().isoformat()
+            },
+            "logs": self.log_buffer
+        }
+        
+        # Write to file
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(export_data, f, indent=2, ensure_ascii=False)
+    
+    def clear_logs(self) -> None:
+        """Clear log buffer"""
+        self.log_buffer.clear()
 
 
 # Global instance

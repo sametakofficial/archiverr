@@ -1,0 +1,148 @@
+{
+  "movie": {
+    "media_type": "movie",
+    "identifiers": {
+      "tmdb_id": "$.id",
+      "imdb_id": "$.imdb_id"
+    },
+    "title": {
+      "primary": "$.title",
+      "original": "$.original_title",
+      "localized": "$.title"
+    },
+    "release": {
+      "date": "$.release_date",
+      "year": "$.release_date[:4]",
+      "status": "$.status"
+    },
+    "runtime": "$.runtime",
+    "ratings": {
+      "tmdb": {
+        "score": "$.vote_average",
+        "votes": "$.vote_count"
+      }
+    },
+    "overview": "$.overview",
+    "genres": "$.genres[].name",
+    "financial": {
+      "budget": "$.budget",
+      "revenue": "$.revenue"
+    },
+    "images": {
+      "poster": "$.poster_path",
+      "backdrop": "$.backdrop_path"
+    }
+  },
+  "show": {
+    "media_type": "show",
+    "identifiers": {
+      "tmdb_id": "$.id"
+    },
+    "title": {
+      "primary": "$.name",
+      "original": "$.original_name",
+      "localized": "$.name"
+    },
+    "air_dates": {
+      "first": "$.first_air_date",
+      "last": "$.last_air_date",
+      "year": "$.first_air_date[:4]"
+    },
+    "status": "$.status",
+    "runtime": "$.episode_run_time[0]",
+    "ratings": {
+      "tmdb": {
+        "score": "$.vote_average",
+        "votes": "$.vote_count"
+      }
+    },
+    "overview": "$.overview",
+    "genres": "$.genres[].name",
+    "network": {
+      "name": "$.networks[0].name",
+      "id": "$.networks[0].id"
+    },
+    "seasons": {
+      "total": "$.number_of_seasons"
+    },
+    "episodes": {
+      "total": "$.number_of_episodes"
+    },
+    "images": {
+      "poster": "$.poster_path",
+      "backdrop": "$.backdrop_path"
+    }
+  },
+  "episode": {
+    "media_type": "episode",
+    "identifiers": {
+      "tmdb_id": "$.id"
+    },
+    "title": {
+      "primary": "$.name",
+      "original": "$.name",
+      "localized": "$.name"
+    },
+    "season_number": "$.season_number",
+    "episode_number": "$.episode_number",
+    "air_date": "$.air_date",
+    "runtime": "$.runtime",
+    "ratings": {
+      "tmdb": {
+        "score": "$.vote_average",
+        "votes": "$.vote_count"
+      }
+    },
+    "overview": "$.overview",
+    "images": {
+      "still": "$.still_path"
+    }
+  },
+  "credits": {
+    "cast": {
+      "id": "$.id",
+      "name": "$.name",
+      "character": "$.character",
+      "order": "$.order",
+      "profile_image": "$.profile_path"
+    },
+    "crew": {
+      "id": "$.id",
+      "name": "$.name",
+      "job": "$.job",
+      "department": "$.department",
+      "profile_image": "$.profile_path"
+    }
+  },
+  "images": {
+    "posters": {
+      "url": "$.file_path",
+      "width": "$.width",
+      "height": "$.height",
+      "aspect_ratio": "$.aspect_ratio",
+      "language": "$.iso_639_1",
+      "rating": "$.vote_average"
+    },
+    "backdrops": {
+      "url": "$.file_path",
+      "width": "$.width",
+      "height": "$.height",
+      "aspect_ratio": "$.aspect_ratio"
+    },
+    "stills": {
+      "url": "$.file_path",
+      "width": "$.width",
+      "height": "$.height",
+      "aspect_ratio": "$.aspect_ratio"
+    }
+  },
+  "videos": {
+    "id": "$.id",
+    "key": "$.key",
+    "name": "$.name",
+    "site": "$.site",
+    "type": "$.type",
+    "size": "$.size"
+  },
+  "keywords": "$.name"
+}

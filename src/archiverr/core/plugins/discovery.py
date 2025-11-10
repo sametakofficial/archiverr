@@ -10,7 +10,7 @@ class PluginDiscovery:
     
     def __init__(self, plugins_dir: str = None):
         if plugins_dir is None:
-            # Default: src/archiverr/plugins (from core/plugin_system/discovery.py → archiverr/plugins)
+            # Default: src/archiverr/plugins
             base = Path(__file__).parent.parent.parent
             plugins_dir = base / 'plugins'
         

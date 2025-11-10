@@ -120,7 +120,6 @@ class RenamerPlugin:
     
     def _error_result(self) -> Dict[str, Any]:
         """Return error result"""
-        from datetime import datetime
         now = datetime.now().isoformat()
         return {
             'status': {

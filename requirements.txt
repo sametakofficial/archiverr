@@ -1,28 +1,53 @@
-# Core dependencies with version pinning for production stability
-# Update versions periodically and test thoroughly
+# ============================================================================
+# Archiverr Dependencies
+# ============================================================================
+# This file contains both CORE dependencies (required for basic functionality)
+# and OPTIONAL dependencies (for future features or development).
+#
+# Sync with setup.py: Core dependencies should match install_requires in setup.py
+# ============================================================================
 
-# HTTP client for API requests
+# ----------------------------------------------------------------------------
+# CORE DEPENDENCIES (Required for production)
+# ----------------------------------------------------------------------------
+
+# HTTP client for API requests (TMDb, TVDb, TVMaze, OMDb)
 requests>=2.31.0,<3.0.0
 
-# YAML configuration parsing
+# YAML configuration parsing (config.yml)
 pyyaml>=6.0.1,<7.0.0
 
-# Advanced regex support
+# Jinja2 template engine (task system)
+jinja2>=3.1.2
+
+# ----------------------------------------------------------------------------
+# OPTIONAL DEPENDENCIES (Not required for basic functionality)
+# ----------------------------------------------------------------------------
+
+# Config validation (optional: schema validation)
+# If not installed, validation is skipped with warning
+jsonschema>=4.0.0
+
+# Advanced regex support (optional: complex parsing patterns)
+# Standard library 're' module is sufficient for most cases
 regex>=2023.10.3
 
-# Environment variable loading
+# Environment variable loading (optional: .env file support)
+# Config.yml is the primary configuration method
 python-dotenv>=1.0.0,<2.0.0
 
-# Database ORM (for future undo/redo feature)
+# ----------------------------------------------------------------------------
+# FUTURE FEATURES (Planned but not yet implemented)
+# ----------------------------------------------------------------------------
+
+# Database ORM (planned: MongoDB persistence, undo/redo feature)
 sqlalchemy>=2.0.0,<3.0.0
 
-# Web framework (for future API backend)
+# Web framework (planned: REST API backend)
 fastapi>=0.104.0,<1.0.0
 
-# ASGI server
+# ASGI server (planned: web UI hosting)
 uvicorn[standard]>=0.24.0,<1.0.0
 
-# Data validation
+# Data validation (planned: API request/response validation)
 pydantic>=2.4.0,<3.0.0
-
-jinja2

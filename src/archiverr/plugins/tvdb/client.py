@@ -1,453 +1,253 @@
-# plugins/tvdb/client.py
-"""
-TVDb API v4 Plugin - Movies + TV Shows support.
-"""
-from __future__ import annotations
-import requests
-from typing import List, Dict, Any, Optional
+"""TVDb Plugin - Clean orchestration layer"""
+from typing import Dict, Any
 from datetime import datetime
 from .extras import TVDbExtras
+from .normalize.normalizer import TVDbNormalizer
+from .utils.api import TVDbAPI
 from archiverr.utils.debug import get_debugger
+from archiverr.plugins.base import OutputPlugin
 
-TVDB_BASE = "https://api4.thetvdb.com/v4"
 
-class TVDbPlugin:
+class TVDbPlugin(OutputPlugin):
+    """TVDb metadata plugin"""
+    
     def __init__(self, config: Dict[str, Any]):
-        """
-        Args:
-            config: Plugin configuration dict
-        """
         self.config = config
-        self.name = "tvdb"
-        self.category = "output"
         self.api_key = config.get('api_key', '')
-        self.timeout = 15
-        self.token: Optional[str] = None
+        self.timeout = 10
+        self.include_raw = config.get('include-raw', False)  # Default: no raw data
         self.debugger = get_debugger()
         
-        # Global extras config
+        # Initialize components
+        self.api = TVDbAPI(self.api_key, self.timeout)
+        self.extras_client = TVDbExtras(self.api.token, self.timeout)
+        self.normalizer = TVDbNormalizer()
         self.extras_config = config.get('extras', {})
-        
-        # Authenticate on init
-        if self.api_key:
-            self._authenticate()
     
     def execute(self, match_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute TVDb plugin to fetch metadata"""
+        """Fetch metadata from TVDb"""
         start_time = datetime.now()
+        renamer_data = match_data.get('renamer', {})
+        parsed_data = renamer_data.get('parsed', {})
         
-        self.debugger.debug("tvdb", "Starting TVDb execution")
+        if not parsed_data:
+            return self._error_result()
         
-        parsed = match_data.get('renamer', {}).get('parsed', {})
-        movie_data = parsed.get('movie')
-        show_data = parsed.get('show')
+        movie_data = parsed_data.get('movie')
+        show_data = parsed_data.get('show')
         
+        try:
+            if movie_data and movie_data.get('name'):
+                result = self._fetch_movie(movie_data, start_time)
+                
+                # Add validation for movies
+                if result.get('status', {}).get('success'):
+                    validation = self._perform_validation(match_data, result)
+                    result['validation'] = validation
+                
+                return result
+            elif show_data and show_data.get('name'):
+                result = self._fetch_show(show_data, start_time)
+                
+                # Add validation for episodes (if episode data available)
+                if result.get('status', {}).get('success') and result.get('episode'):
+                    validation = self._perform_validation(match_data, result)
+                    result['validation'] = validation
+                
+                return result
+            else:
+                return self._error_result()
+        except Exception as e:
+            self.debugger.error("tvdb", "Execution failed", error=str(e))
+            return self._error_result()
+    
+    def _fetch_movie(self, movie_data: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
+        """Fetch movie metadata"""
+        movie_name = movie_data.get('name')
+        year = movie_data.get('year')
+        
+        # Search movie
+        search_results = self.api.search_movie(movie_name)
+        
+        if not search_results.get('data'):
+            return self._error_result()
+        
+        movie_id = search_results['data'][0]['tvdb_id']
+        self.debugger.info("tvdb", "Movie found", tvdb_id=movie_id, title=movie_name)
+        
+        # Get extended info
+        raw_movie_extended = self.api.get_movie_extended(movie_id)
+        
+        # Fetch extras
+        raw_extras = {}
+        if self.extras_config.get('movies_extended'):
+            raw_extras['movies_extended'] = raw_movie_extended
+            self.debugger.debug("tvdb", "Fetched movies_extended", endpoint="/movies/{id}/extended")
+        
+        # Normalize (DEFAULT OUTPUT)
+        normalized_movie = self.normalizer.normalize_movie(raw_movie_extended)
+        
+        end_time = datetime.now()
         result = {
-            'status': {'success': True, 'started_at': start_time.isoformat(), 'finished_at': '', 'duration_ms': 0, 'not_supported': False},
+            'status': {
+                'success': True,
+                'started_at': start_time.isoformat(),
+                'finished_at': end_time.isoformat(),
+                'duration_ms': int((end_time - start_time).total_seconds() * 1000)
+            },
+            'movie': normalized_movie,  # NORMALIZED by default
+            'show': None,
+            'season': None,
+            'episode': None
+        }
+        
+        # Add RAW data ONLY if requested
+        if self.include_raw:
+            result['raw'] = {
+                'movie': {
+                    'name': raw_movie_extended.get('data', {}).get('name'),
+                    'year': year,
+                    'tvdb_id': movie_id,
+                    'overview': raw_movie_extended.get('data', {}).get('overview'),
+                    'runtime': raw_movie_extended.get('data', {}).get('runtime')
+                },
+                'extras': raw_extras
+            }
+        
+        self.debugger.debug("tvdb", "Movie normalized",
+                           tvdb_id=movie_id,
+                           title=normalized_movie['title']['primary'],
+                           include_raw=self.include_raw)
+        
+        return result
+    
+    def _perform_validation(self, match_data: Dict[str, Any], tvdb_result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Perform validation tests (duration matching)
+        
+        Returns:
+            {tests_passed, tests_total, details}
+        """
+        tests = {}
+        tests_passed = 0
+        tests_total = 0
+        
+        # Get ffprobe duration
+        ffprobe_data = match_data.get('ffprobe', {})
+        container = ffprobe_data.get('container', {})
+        ffprobe_duration = container.get('duration', 0)
+        
+        if ffprobe_duration > 0:
+            runtime_minutes = None
+            
+            # Check movie runtime
+            if tvdb_result.get('movie'):
+                runtime_minutes = tvdb_result['movie'].get('runtime')
+            
+            # Check episode runtime
+            elif tvdb_result.get('episode'):
+                runtime_minutes = tvdb_result['episode'].get('runtime')
+            
+            # Perform validation if runtime available
+            if runtime_minutes:
+                validation_result = self._validate_duration(
+                    ffprobe_duration,
+                    runtime_minutes,
+                    tolerance_seconds=600  # 10 minutes
+                )
+                
+                tests['duration_match'] = validation_result.details
+                tests_total += 1
+                if validation_result.passed:
+                    tests_passed += 1
+        
+        return {
+            'tests_passed': tests_passed,
+            'tests_total': tests_total,
+            'details': tests
+        }
+    
+    def _fetch_show(self, show_data: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
+        """Fetch TV show metadata"""
+        show_name = show_data.get('name')
+        season_num = show_data.get('season')
+        episode_num = show_data.get('episode')
+        
+        # Search series
+        search_results = self.api.search_series(show_name)
+        
+        if not search_results.get('data'):
+            return self._error_result()
+        
+        series_id = search_results['data'][0]['tvdb_id']
+        self.debugger.info("tvdb", "TV show found", tvdb_id=series_id, title=show_name)
+        
+        # Get extended info
+        raw_series_extended = self.api.get_series_extended(series_id)
+        
+        # Fetch extras
+        raw_extras = {}
+        if self.extras_config.get('series_extended'):
+            raw_extras['series_extended'] = raw_series_extended
+            self.debugger.debug("tvdb", "Fetched series_extended", endpoint="/series/{id}/extended")
+        
+        if self.extras_config.get('series_artworks'):
+            artworks = self.extras_client.series_artworks(series_id)
+            if artworks:
+                raw_extras['series_artworks'] = artworks
+                self.debugger.debug("tvdb", "Fetched series_artworks", endpoint="/series/{id}/artworks")
+        
+        # Normalize (DEFAULT OUTPUT)
+        normalized_show = self.normalizer.normalize_show(raw_series_extended)
+        
+        # Build result
+        end_time = datetime.now()
+        result = {
+            'status': {
+                'success': True,
+                'started_at': start_time.isoformat(),
+                'finished_at': end_time.isoformat(),
+                'duration_ms': int((end_time - start_time).total_seconds() * 1000)
+            },
+            'show': normalized_show,  # NORMALIZED by default
+            'season': None,
+            'episode': None,
+            'movie': None
+        }
+        
+        # Add RAW data ONLY if requested
+        if self.include_raw:
+            result['raw'] = {
+                'show': {
+                    'name': raw_series_extended.get('data', {}).get('name'),
+                    'tvdb_id': str(series_id)
+                },
+                'season': {'number': season_num},
+                'episode': {'number': episode_num},
+                'extras': raw_extras
+            }
+        
+        self.debugger.debug("tvdb", "TV show normalized",
+                           tvdb_id=series_id,
+                           title=normalized_show['title']['primary'],
+                           include_raw=self.include_raw)
+        
+        return result
+    
+    def _error_result(self) -> Dict[str, Any]:
+        """Return error result"""
+        now = datetime.now().isoformat()
+        return {
+            'status': {
+                'success': False,
+                'started_at': now,
+                'finished_at': now,
+                'duration_ms': 0
+            },
             'movie': None,
             'show': None,
             'season': None,
             'episode': None,
-            'extras': {}
+            'extras': {},
+            'normalized': {}
         }
-        
-        try:
-            # Handle movie first
-            if movie_data and movie_data.get('year'):
-                movie_name = movie_data.get('name')
-                year = movie_data.get('year')
-                
-                self.debugger.debug("tvdb", "Searching movie", name=movie_name, year=year)
-                search_results = self.search_movie(movie_name, year, max_results=1)
-                if search_results:
-                    movie_id = search_results[0]['ids']['tvdb']
-                    self.debugger.info("tvdb", "Movie found", tvdb_id=movie_id, title=movie_name)
-                    movie_info = self.movie_details(int(movie_id))
-                    
-                    result['movie'] = {
-                        'name': movie_info.get('title'),
-                        'year': year,
-                        'tvdb_id': movie_id,
-                        'overview': movie_info.get('overview'),
-                        'runtime': movie_info.get('runtime')
-                    }
-                    
-                    # Fetch extras - Endpoint-Based System (RAW API responses)
-                    extras_client = TVDbExtras(self.token, self.timeout)
-                    
-                    # Movies Extended Endpoint
-                    if self.extras_config.get('movies_extended'):
-                        try:
-                            data = extras_client.movies_extended(int(movie_id))
-                            if data:
-                                result['extras']['movies_extended'] = data
-                        except Exception:
-                            pass
-            
-            # Handle TV show
-            elif show_data and show_data.get('name'):
-                show_name = show_data.get('name')
-                season_num = show_data.get('season')
-                episode_num = show_data.get('episode')
-                
-                self.debugger.debug("tvdb", "Searching TV show", name=show_name)
-                search_results = self.search_tv(show_name, max_results=1)
-                if search_results:
-                    series_id = int(search_results[0]['ids']['tvdb'])
-                    self.debugger.info("tvdb", "TV show found", tvdb_id=series_id, title=show_name)
-                    series_info = self.get_series_details(series_id)
-                    
-                    result['show'] = {
-                        'name': series_info.get('name'),
-                        'tvdb_id': str(series_id),
-                        'overview': series_info.get('overview'),
-                        'status': series_info.get('status'),
-                        'first_aired': series_info.get('first_air_date')
-                    }
-                    
-                    # Fetch extras - Endpoint-Based System (RAW API responses)
-                    extras_client = TVDbExtras(self.token, self.timeout)
-                    
-                    # Series Extended Endpoint
-                    if self.extras_config.get('series_extended'):
-                        data = extras_client.series_extended(series_id)
-                        if data:
-                            result['extras']['series_extended'] = data
-                    
-                    # Series Artworks Endpoint
-                    if self.extras_config.get('series_artworks'):
-                        data = extras_client.series_artworks(series_id)
-                        if data:
-                            result['extras']['series_artworks'] = data
-                    
-                    # Episode and season extras
-                    if season_num and episode_num:
-                        episode_info = self.get_episode(series_id, season_num, episode_num)
-                        if episode_info:
-                            episode_id = episode_info.get('id')
-                            result['episode'] = {
-                                'id': episode_id,
-                                'number': episode_info.get('episode_number'),
-                                'season': episode_info.get('season_number'),
-                                'name': episode_info.get('name'),
-                                'aired': episode_info.get('air_date')
-                            }
-                            
-                            # Episode extras
-                            if episode_id:
-                                # Episodes Extended Endpoint
-                                if self.extras_config.get('episodes_extended'):
-                                    data = extras_client.episodes_extended(episode_id)
-                                    if data:
-                                        result['extras']['episodes_extended'] = data
-                        
-                        # Season extras
-                        season_id = self._resolve_season_id(series_id, season_num)
-                        if season_id:
-                            result['season'] = {
-                                'id': season_id,
-                                'number': season_num,
-                                'name': f'Season {season_num}'
-                            }
-                            
-                            # Seasons Extended Endpoint
-                            if self.extras_config.get('seasons_extended'):
-                                data = extras_client.seasons_extended(season_id)
-                                if data:
-                                    result['extras']['seasons_extended'] = data
-                        else:
-                            result['season'] = {'number': season_num, 'name': f'Season {season_num}'}
-            
-        except Exception:
-            result['status']['success'] = False
-        
-        end_time = datetime.now()
-        result['status']['finished_at'] = end_time.isoformat()
-        result['status']['duration_ms'] = int((end_time - start_time).total_seconds() * 1000)
-        
-        return result
-
-    def _authenticate(self) -> None:
-        url = f"{TVDB_BASE}/login"
-        resp = requests.post(url, json={"apikey": self.api_key}, timeout=self.timeout)
-        resp.raise_for_status()
-        data = resp.json()
-        token = (data or {}).get("data", {}).get("token")
-        if not token:
-            raise RuntimeError("TVDb authentication failed: no token in response")
-        self.token = token
-
-    def _headers(self) -> Dict[str, str]:
-        if not self.token:
-            raise RuntimeError("TVDb token missing; call _authenticate()")
-        return {
-            "Authorization": f"Bearer {self.token}",
-            "Accept": "application/json",
-            "Accept-Language": "eng"
-        }
-
-    def _get(self, endpoint: str, params: Dict[str, Any] | None = None) -> Dict[str, Any]:
-        url = f"{TVDB_BASE}/{endpoint.lstrip('/')}"
-        resp = requests.get(url, headers=self._headers(), params=params, timeout=self.timeout)
-        if resp.status_code == 401:
-            self._authenticate()
-            resp = requests.get(url, headers=self._headers(), params=params, timeout=self.timeout)
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict) and data.get("status") == "failure":
-            raise RuntimeError(f"TVDb API error: {data.get('message', 'unknown error')}")
-        return data
-
-    # -------- MOVIE --------
-    def search_movie(self, title: str, year: Optional[int] = None, max_results: int = 5) -> List[Dict[str, Any]]:
-        params: Dict[str, Any] = {"query": title, "type": "movie"}
-        if year: params["year"] = year
-        data = self._get("search", params)
-        out: List[Dict[str, Any]] = []
-        for it in (data.get("data") or [])[:max_results]:
-            if it.get("type") != "movie":
-                continue
-            out.append({
-                "ids": {"tvdb": str(it.get("tvdb_id"))},
-                "title": it.get("name"),
-                "original_title": it.get("name"),
-                "release_date": it.get("firstRelease") or it.get("releaseDate"),
-                "overview": it.get("overview")
-            })
-        return out
-
-    def movie_details(self, movie_id: int) -> Dict[str, Any]:
-        raw = self._get(f"movies/{movie_id}").get("data", {}) or {}
-        # Some fields require /movies/{id}/extended, keeping basic to avoid extra roundtrips here
-        return {
-            "ids": {"tvdb": str(raw.get("id"))},
-            "title": raw.get("name"),
-            "original_title": raw.get("name"),
-            "overview": raw.get("overview"),
-            "release_date": raw.get("firstRelease") or raw.get("releaseDate"),
-            "runtime": raw.get("runtime"),
-            "genres": [g.get("name") for g in (raw.get("genres") or []) if g.get("name")],
-            "poster": raw.get("image") or raw.get("poster"),
-            "external_urls": None,
-            "credits": {"cast": [], "crew": []}
-        }
-
-    # -------- TV --------
-    def search_tv(self, title: str, first_air_year: Optional[int] = None, max_results: int = 5) -> List[Dict[str, Any]]:
-        params: Dict[str, Any] = {"query": title, "type": "series"}
-        if first_air_year: params["year"] = first_air_year
-        data = self._get("search", params)
-        out: List[Dict[str, Any]] = []
-        for it in (data.get("data") or [])[:max_results]:
-            if it.get("type") != "series":
-                continue
-            out.append({
-                "ids": {"tvdb": str(it.get("tvdb_id"))},
-                "name": it.get("name"),
-                "original_name": it.get("name"),
-                "first_air_date": it.get("firstAired") or None,
-                "overview": it.get("overview") or None
-            })
-        return out
-
-    def get_series_details(self, series_id: int) -> Dict[str, Any]:
-        data = self._get(f"series/{series_id}/extended").get("data", {}) or {}
-        
-        # Filter only official seasons (exclude specials with type != official)
-        all_seasons = data.get("seasons") or []
-        official_seasons = []
-        for s in all_seasons:
-            s_type = s.get("type", {})
-            # Check if type.type == "official" or if it's a numbered season > 0
-            is_official = False
-            if isinstance(s_type, dict):
-                if s_type.get("type") == "official" or s_type.get("name") == "Aired Order":
-                    is_official = True
-            elif s.get("number", 0) > 0:
-                is_official = True
-            if not is_official:
-                continue
-            season_entry = {"season_number": s.get("number"), "episode_count": 0}
-            # If season id exists, fetch extended to count episodes reliably
-            sid = s.get("id")
-            if sid:
-                try:
-                    season_ext = self._get(f"seasons/{sid}/extended").get("data", {}) or {}
-                    eps = season_ext.get("episodes") or []
-                    season_entry["episode_count"] = len(eps)
-                except Exception:
-                    season_entry["episode_count"] = s.get("episodesCount", 0) or 0
-            else:
-                season_entry["episode_count"] = s.get("episodesCount", 0) or 0
-            official_seasons.append(season_entry)
-        
-        # Extract genres
-        genres = [g.get("name") for g in (data.get("genres") or []) if g.get("name")]
-        
-        # Extract networks from companies (originalNetwork or network type)
-        networks = []
-        companies = data.get("companies") or []
-        for company in companies:
-            if isinstance(company, dict):
-                comp_type = company.get("companyType", {})
-                if isinstance(comp_type, dict) and comp_type.get("companyTypeName") in ["Network", "Original Broadcaster"]:
-                    networks.append(company.get("name"))
-        
-        # Fallback to originalNetwork field if available
-        if not networks and data.get("originalNetwork"):
-            networks.append(data.get("originalNetwork"))
-        
-        # Extract status string from object if needed
-        status_obj = data.get("status")
-        if isinstance(status_obj, dict):
-            status_str = status_obj.get("name", "")
-        else:
-            status_str = str(status_obj) if status_obj else ""
-        
-        # TVDb doesn't provide ratings in series endpoint, skip it
-        ratings = None
-        
-        return {
-            "ids": {"tvdb": str(data.get("id"))},
-            "name": data.get("name"),
-            "original_name": data.get("nativeName") or data.get("name"),
-            "overview": data.get("overview"),
-            "first_air_date": data.get("firstAired"),
-            "last_air_date": data.get("lastAired"),
-            "status": status_str,
-            "in_production": (status_str == "Continuing"),
-            "poster": (data.get("image") or data.get("poster")),
-            "seasons": official_seasons or None,
-            "genres": genres or None,
-            "networks": networks or None,
-            "ratings": ratings
-        }
-
-    def _resolve_season_id(self, series_id: int, season_number: int) -> Optional[int]:
-        # Use extended endpoint to get seasons (same as get_series_details)
-        try:
-            data = self._get(f"series/{series_id}/extended").get("data", {}) or {}
-            seasons = data.get("seasons") or []
-        except Exception:
-            return None
-        
-        # First pass: prefer official/aired order seasons
-        for s in seasons:
-            if s.get("number") == season_number:
-                s_type = s.get("type", {})
-                if isinstance(s_type, dict):
-                    type_name = s_type.get("type") or s_type.get("name", "")
-                    if type_name in ["official", "Aired Order", "aired"]:
-                        return s.get("id")
-                else:
-                    return s.get("id")
-        
-        # Second pass: return any season with matching number
-        for s in seasons:
-            if s.get("number") == season_number:
-                return s.get("id")
-        
-        return None
-
-    def get_season_episodes(self, series_id: int, season: int) -> Dict[str, Any]:
-        season_id = self._resolve_season_id(series_id, season)
-        if not season_id:
-            return {"ids": {"tvdb": None}, "season_number": season, "episodes": None}
-        data = self._get(f"seasons/{season_id}/extended").get("data", {}) or {}
-        episodes = []
-        for ep in (data.get("episodes") or []):
-            episodes.append({
-                "ids": {"tvdb": str(ep.get("id"))},
-                "season_number": ep.get("seasonNumber"),
-                "episode_number": ep.get("number"),
-                "name": ep.get("name"),
-                "overview": ep.get("overview"),
-                "air_date": ep.get("aired"),
-                "runtime": ep.get("runtime"),
-                "still": ep.get("image"),
-            })
-        return {"ids": {"tvdb": str(season_id)}, "season_number": season, "episodes": episodes or None}
-
-    def get_episode(self, series_id: int, season: int, episode: int) -> Optional[Dict[str, Any]]:
-        season_payload = self.get_season_episodes(series_id, season)
-        episodes = season_payload.get("episodes") or []
-        for ep in episodes:
-            ep_num = ep.get("episode_number")
-            if ep_num == episode:
-                return ep
-        return None
-    
-    # ========================================================================
-    # EXTRAS FETCHER
-    # ========================================================================
-    
-    def fetch_extras(
-        self,
-        item_type: str,  # 'movie', 'tv', 'season', 'episode'
-        item_id: int,
-        season: Optional[int] = None,
-        episode: Optional[int] = None,
-        override_config: Optional[Dict[str, bool]] = None
-    ) -> Dict[str, Any]:
-        """
-        Fetch extra metadata based on global config.
-        
-        TVDb has limited extra endpoints compared to TMDb.
-        Most data is in /extended endpoint already.
-        
-        Args:
-            item_type: 'movie', 'tv', 'season', 'episode'
-            item_id: TVDb series/movie ID
-            season: Season number (for season/episode)
-            episode: Episode number (for episode)
-            override_config: Override config extras (for CLI manual fetch)
-        
-        Returns:
-            Dict with extras data
-        """
-        config = override_config if override_config is not None else self.extras_config
-        extras_data = {}
-        
-        # TVDb doesn't support movie extras in the same way
-        # Most movie data is in the main endpoint
-        
-        if item_type == 'tv':
-            # TV series extras
-            if config.get('tv_credits'):
-                credits = self.extras.tv_credits(item_id)
-                if credits:
-                    extras_data['credits'] = credits
-            
-            if config.get('tv_images'):
-                images = self.extras.tv_images(item_id)
-                if images:
-                    extras_data['images'] = images
-            
-            if config.get('tv_external_ids'):
-                external_ids = self.extras.tv_external_ids(item_id)
-                if external_ids:
-                    extras_data['external_ids'] = external_ids
-            
-            if config.get('tv_content_ratings'):
-                content_ratings = self.extras.tv_content_ratings(item_id)
-                if content_ratings:
-                    extras_data['content_ratings'] = content_ratings
-            
-            # Note: TVDb doesn't have separate endpoints for:
-            # - videos - not available
-            # - keywords - not available
-            # - watch_providers - not available
-        
-        elif item_type == 'episode' and season is not None and episode is not None:
-            # Episode extras
-            if config.get('episode_images'):
-                images = self.extras.episode_images(item_id, season, episode)
-                if images:
-                    extras_data['images'] = images
-            
-            # Note: TVDb episode images are included in episode details
-            # No separate videos, credits endpoints for episodes
-        
-        # Season and movie extras not well-supported by TVDb API v4
-        
-        return extras_data if extras_data else None

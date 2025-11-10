@@ -62,7 +62,7 @@ YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 def _strip_leading_brackets(s: str) -> str:
     return re.sub(r"^\s*(\[[^\]]*\]\s*)+", '', s)
 
-def sanitize_string(s: str, custom_delete_keywords=None) -> str:
+def sanitize_string(s: str, custom_delete_keywords: Optional[list] = None) -> str:
     # Replace dots/underscores with spaces
     s = SPACE_REGEX.sub(' ', s)
     
@@ -116,24 +116,32 @@ def _wide_try(s: str):
     for p in SEASON_PATTERNS:
         m = p.search(s)
         if m:
-            try: season = int(m['season']); break
-            except: pass
+            try:
+                season = int(m['season'])
+                break
+            except (ValueError, KeyError, TypeError):
+                pass
     for p in EPISODE_PATTERNS_LOOSE:
         m = p.search(s)
         if m:
-            try: episode = int(m['episode']); break
-            except: pass
+            try:
+                episode = int(m['episode'])
+                break
+            except (ValueError, KeyError, TypeError):
+                pass
     return season, episode
 
 def _abs_try(s: str) -> Optional[int]:
     for p in ABS_EP_PATTERNS:
         m = p.search(s)
         if m:
-            try: return int(m.group('abs'))
-            except: pass
+            try:
+                return int(m.group('abs'))
+            except (ValueError, AttributeError, KeyError):
+                pass
     return None
 
-def parse_movie_name(name_without_ext: str, custom_delete_keywords=None) -> Tuple[str, Optional[int]]:
+def parse_movie_name(name_without_ext: str, custom_delete_keywords: Optional[list] = None) -> Tuple[str, Optional[int]]:
     # First extract year BEFORE sanitizing (to catch (2005) format)
     year_match = re.search(r'\(?(19\d{2}|20\d{2})\)?', name_without_ext)
     year = int(year_match.group(1)) if year_match else None
@@ -155,7 +163,7 @@ def parse_movie_name(name_without_ext: str, custom_delete_keywords=None) -> Tupl
     
     return cleaned.title(), year
 
-def parse_show_name(name_without_ext: str, custom_delete_keywords=None, exclude_unparsed: bool=False):
+def parse_show_name(name_without_ext: str, custom_delete_keywords: Optional[list] = None, exclude_unparsed: bool = False) -> Tuple[str, int, int, bool]:
     # 0) çok minimal normalizasyon (nokta/altçizgi->boşluk), bracketları KORU
     pre = SPACE_REGEX.sub(' ', name_without_ext)
 

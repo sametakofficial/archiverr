@@ -19,7 +19,6 @@ class ScannerPlugin:
         Scan targets and return list of matches.
         Each match has structure: {status, input}
         """
-        from datetime import datetime
         targets = self.config.get('targets', [])
         recursive = self.config.get('recursive', True)
         allow_virtual = self.config.get('allow_virtual_paths', False)

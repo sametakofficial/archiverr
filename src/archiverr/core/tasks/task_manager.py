@@ -1,5 +1,6 @@
 """Task Manager - Execute tasks for matches"""
 import shutil
+import yaml
 from typing import Dict, List, Any
 from pathlib import Path
 
@@ -64,6 +65,12 @@ class TaskManager:
             Task result or None
         """
         task_name = task_config.get('name', 'unnamed')
+        is_external = task_config.get('external', False)
+        
+        # Handle external task
+        if is_external:
+            return self._execute_external_task(task_config, api_response, current_index, dry_run)
+        
         task_type = task_config.get('type', 'print')
         condition = task_config.get('condition')
         
@@ -124,18 +131,17 @@ class TaskManager:
         
         destination = self.template_manager.render(destination_template, api_response, current_index)
         
-        # Get source file
-        items = api_response.get('items', [])
-        if current_index >= len(items):
+        # Get source file from match.globals.input (generic pattern)
+        matches = api_response.get('matches', [])
+        if current_index >= len(matches):
             return None
         
-        current_item = items[current_index]
+        current_match = matches[current_index]
         
-        source = None
-        if 'scanner' in current_item:
-            source = current_item['scanner'].get('input')
-        elif 'file_reader' in current_item:
-            source = current_item['file_reader'].get('input')
+        # Use generic input metadata from match.globals (plugin-agnostic)
+        match_globals = current_match.get('globals', {})
+        input_metadata = match_globals.get('input', {})
+        source = input_metadata.get('path')
         
         if not source or not destination:
             return None
@@ -165,3 +171,62 @@ class TaskManager:
             'success': success,
             'dry_run': dry_run
         }
+    
+    def _execute_external_task(
+        self,
+        task_config: Dict[str, Any],
+        api_response: Dict[str, Any],
+        current_index: int,
+        dry_run: bool
+    ) -> Dict[str, Any]:
+        """
+        Execute an external task from a YAML file.
+        
+        Args:
+            task_config: Task config with 'path' to external file
+            api_response: API response
+            current_index: Current match index
+            dry_run: Dry run mode
+            
+        Returns:
+            Task result or None
+        """
+        task_name = task_config.get('name', 'unnamed')
+        task_path = task_config.get('path')
+        
+        if not task_path:
+            self.debugger.error("tasks", "External task missing 'path'", task=task_name)
+            return None
+        
+        # Resolve path relative to config directory
+        config_dir = Path(self.config.get('_config_dir', '.'))
+        external_file = config_dir / task_path
+        
+        if not external_file.exists():
+            self.debugger.error("tasks", "External task file not found", path=str(external_file))
+            return None
+        
+        try:
+            # Load external task file
+            with open(external_file, 'r') as f:
+                external_config = yaml.safe_load(f)
+            
+            if not external_config:
+                return None
+            
+            self.debugger.debug("tasks", "Loading external task", task=task_name, path=str(external_file))
+            
+            # External file can be a single task or a list of tasks
+            if isinstance(external_config, dict):
+                # Single task
+                return self._execute_task(external_config, api_response, current_index, dry_run)
+            elif isinstance(external_config, list):
+                # Multiple tasks - execute all and return last result
+                result = None
+                for sub_task in external_config:
+                    result = self._execute_task(sub_task, api_response, current_index, dry_run)
+                return result
+            
+        except Exception as e:
+            self.debugger.error("tasks", "External task execution failed", task=task_name, error=str(e))
+            return None

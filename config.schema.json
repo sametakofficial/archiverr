@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Archiverr Configuration Schema",
+  "description": "JSON Schema for validating config.yml structure",
+  "type": "object",
+  "properties": {
+    "options": {
+      "type": "object",
+      "description": "Global system options",
+      "properties": {
+        "debug": {
+          "type": "boolean",
+          "description": "Enable debug logging to stderr",
+          "default": false
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Simulate operations without making changes",
+          "default": true
+        },
+        "hardlink": {
+          "type": "boolean",
+          "description": "Use hardlinks instead of copying files",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "plugins": {
+      "type": "object",
+      "description": "Plugin configurations (snake_case keys for plugin settings)",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether plugin is enabled"
+            }
+          },
+          "required": ["enabled"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "tasks": {
+      "type": "array",
+      "description": "Task definitions executed per match",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Task identifier"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["print", "save", "external"],
+            "description": "Task type"
+          },
+          "external": {
+            "type": "boolean",
+            "description": "Whether task is defined in external file"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path to external task file (for external tasks)"
+          },
+          "template": {
+            "type": "string",
+            "description": "Jinja2 template (for inline tasks)"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination path template (for save tasks)"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Jinja2 condition to control task execution"
+          }
+        },
+        "required": ["name"],
+        "oneOf": [
+          {
+            "properties": {
+              "external": {"const": true},
+              "path": {"type": "string"}
+            },
+            "required": ["external", "path"]
+          },
+          {
+            "properties": {
+              "type": {"type": "string"}
+            },
+            "required": ["type"]
+          }
+        ]
+      }
+    }
+  },
+  "required": ["options", "plugins", "tasks"],
+  "additionalProperties": false
+}

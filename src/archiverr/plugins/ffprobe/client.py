@@ -1,10 +1,11 @@
 """FFProbe Plugin - Extract media file metadata"""
 import subprocess
 import json
-from typing import Dict, Any
+from typing import Dict, Any, List
 from datetime import datetime
 from pathlib import Path
 from archiverr.utils.debug import get_debugger
+from .utils.parsers import parse_fps, parse_duration, parse_bitrate, parse_int_safe
 
 
 class FFProbePlugin:
@@ -26,7 +27,6 @@ class FFProbePlugin:
         Returns:
             {status, video, audio, container} or not_supported for virtual paths
         """
-        from datetime import datetime
         start_time = datetime.now()
         
         # Get input metadata from match globals
@@ -80,27 +80,27 @@ class FFProbePlugin:
                     'codec_long': video_stream.get('codec_long_name', ''),
                     'profile': video_stream.get('profile', ''),
                     'level': video_stream.get('level', ''),
-                    'width': video_stream.get('width', 0),
-                    'height': video_stream.get('height', 0),
+                    'width': parse_int_safe(str(video_stream.get('width', 0))),
+                    'height': parse_int_safe(str(video_stream.get('height', 0))),
                     'resolution': f"{video_stream.get('height', 0)}p",
                     'aspect_ratio': video_stream.get('display_aspect_ratio', ''),
-                    'bit_depth': video_stream.get('bits_per_raw_sample', 8),
+                    'bit_depth': parse_int_safe(str(video_stream.get('bits_per_raw_sample', 8)), default=8),
                     'pix_fmt': video_stream.get('pix_fmt', ''),
-                    'fps': eval(video_stream.get('r_frame_rate', '0/1').replace('/', './')),
-                    'duration': float(video_stream.get('duration', 0)),
-                    'bitrate': int(video_stream.get('bit_rate', 0))
+                    'fps': parse_fps(video_stream.get('r_frame_rate', '0/1')),
+                    'duration': parse_duration(str(video_stream.get('duration', 0))),
+                    'bitrate': parse_bitrate(str(video_stream.get('bit_rate', 0)))
                 }
             
             # Extract audio info
-            audio = []
+            audio: List[Dict[str, Any]] = []
             for stream in audio_streams:
                 audio.append({
                     'codec': stream.get('codec_name', ''),
                     'codec_long': stream.get('codec_long_name', ''),
-                    'channels': stream.get('channels', 0),
+                    'channels': parse_int_safe(str(stream.get('channels', 0))),
                     'channel_layout': stream.get('channel_layout', ''),
                     'sample_rate': stream.get('sample_rate', ''),
-                    'bitrate': int(stream.get('bit_rate', 0)),
+                    'bitrate': parse_bitrate(str(stream.get('bit_rate', 0))),
                     'language': stream.get('tags', {}).get('language', '')
                 })
             
@@ -108,9 +108,9 @@ class FFProbePlugin:
             format_info = data.get('format', {})
             container = {
                 'format': format_info.get('format_name', ''),
-                'duration': float(format_info.get('duration', 0)),
-                'size': int(format_info.get('size', 0)),
-                'bitrate': int(format_info.get('bit_rate', 0))
+                'duration': parse_duration(str(format_info.get('duration', 0))),
+                'size': parse_int_safe(str(format_info.get('size', 0))),
+                'bitrate': parse_bitrate(str(format_info.get('bit_rate', 0)))
             }
             
             # Log extracted info
@@ -150,13 +150,13 @@ class FFProbePlugin:
     
     def _error_result(self) -> Dict[str, Any]:
         """Return error result"""
-        end_time = datetime.now()
+        now = datetime.now()
         return {
             'status': {
                 'success': False,
-                'started_at': datetime.now().isoformat(),
-                'finished_at': end_time.isoformat(),
-                'duration_ms': int((end_time - datetime.now()).total_seconds() * 1000)
+                'started_at': now.isoformat(),
+                'finished_at': now.isoformat(),
+                'duration_ms': 0
             },
             'video': {},
             'audio': [],

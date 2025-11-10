@@ -1,0 +1,203 @@
+# External Task: RAW Metadata Checker (requires include-raw: true)
+# Usage in config.yml:
+#   - name: "check_raw_metadata"
+#     external: true
+#     path: "tasks/metadata-raw-checker.yml"
+#     condition: "{% if tmdb.raw %}"  # Only if raw data exists
+
+type: "print"
+template: |
+  
+  ╔══════════════════════════════════════════════════════════════╗
+  ║         RAW API RESPONSES VERIFICATION                      ║
+  ╚══════════════════════════════════════════════════════════════╝
+  
+  {% if tmdb and tmdb.raw %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TMDb Plugin - RAW API Responses                      [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tmdb.raw.movie %}
+    ► RAW Movie Data:
+      • title: {{ tmdb.raw.movie.name }}
+      • original_title: {{ tmdb.raw.movie.original_name }}
+      • release_date: {{ tmdb.raw.movie.release_date }}
+      • runtime: {{ tmdb.raw.movie.runtime }} min
+      • vote_average: {{ tmdb.raw.movie.vote_average }}/10
+      • vote_count: {{ tmdb.raw.movie.vote_count }}
+      • genres: {{ tmdb.raw.movie.genres|join(', ') }}
+    
+    {% if tmdb.raw.extras %}
+    ► RAW Extras:
+      {% if tmdb.raw.extras.movie_credits %}
+      • movie_credits: {{ tmdb.raw.extras.movie_credits.cast|length }} cast, {{ tmdb.raw.extras.movie_credits.crew|length }} crew
+      {% endif %}
+      {% if tmdb.raw.extras.movie_images %}
+      • movie_images: {{ tmdb.raw.extras.movie_images.posters|length }} posters, {{ tmdb.raw.extras.movie_images.backdrops|length }} backdrops
+      {% endif %}
+      {% if tmdb.raw.extras.movie_videos %}
+      • movie_videos: {{ tmdb.raw.extras.movie_videos.results|length }} videos
+      {% endif %}
+      {% if tmdb.raw.extras.movie_keywords %}
+      • movie_keywords: {{ tmdb.raw.extras.movie_keywords.keywords|length }} keywords
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  
+  {% if tmdb.raw.show %}
+    ► RAW Show Data:
+      • name: {{ tmdb.raw.show.name }}
+      • original_name: {{ tmdb.raw.show.original_name }}
+      • first_air_date: {{ tmdb.raw.show.first_air_date }}
+      • vote_average: {{ tmdb.raw.show.vote_average }}/10
+      • number_of_seasons: {{ tmdb.raw.show.number_of_seasons }}
+      • number_of_episodes: {{ tmdb.raw.show.number_of_episodes }}
+    
+    {% if tmdb.raw.season %}
+    ► RAW Season Data:
+      • season_number: {{ tmdb.raw.season.number }}
+      • name: {{ tmdb.raw.season.name }}
+      • episode_count: {{ tmdb.raw.season.episode_count }}
+    {% endif %}
+    
+    {% if tmdb.raw.episode %}
+    ► RAW Episode Data:
+      • episode_number: {{ tmdb.raw.episode.number }}
+      • name: {{ tmdb.raw.episode.name }}
+      • runtime: {{ tmdb.raw.episode.runtime }} min
+    {% endif %}
+    
+    {% if tmdb.raw.extras %}
+    ► RAW Extras:
+      {% if tmdb.raw.extras.tv_credits %}
+      • tv_credits: {{ tmdb.raw.extras.tv_credits.cast|length }} cast, {{ tmdb.raw.extras.tv_credits.crew|length }} crew
+      {% endif %}
+      {% if tmdb.raw.extras.tv_images %}
+      • tv_images: {{ tmdb.raw.extras.tv_images.posters|length }} posters, {{ tmdb.raw.extras.tv_images.backdrops|length }} backdrops
+      {% endif %}
+      {% if tmdb.raw.extras.tv_videos %}
+      • tv_videos: {{ tmdb.raw.extras.tv_videos.results|length }} videos
+      {% endif %}
+      {% if tmdb.raw.extras.tv_keywords %}
+      • tv_keywords: {{ tmdb.raw.extras.tv_keywords.results|length }} keywords
+      {% endif %}
+      {% if tmdb.raw.extras.tv_season_images %}
+      • tv_season_images: {{ tmdb.raw.extras.tv_season_images.posters|length }} posters
+      {% endif %}
+      {% if tmdb.raw.extras.tv_episode_credits %}
+      • tv_episode_credits: {{ tmdb.raw.extras.tv_episode_credits.cast|length }} cast, {{ tmdb.raw.extras.tv_episode_credits.guest_stars|length }} guests
+      {% endif %}
+      {% if tmdb.raw.extras.tv_episode_images %}
+      • tv_episode_images: {{ tmdb.raw.extras.tv_episode_images.stills|length }} stills
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  {% else %}
+  
+  ⚠ RAW data not available. Set 'include-raw: true' in tmdb config.
+  {% endif %}
+  
+  {% if tvdb and tvdb.raw %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TVDb Plugin - RAW API Responses                      [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tvdb.raw.movie %}
+    ► RAW Movie Data:
+      • name: {{ tvdb.raw.movie.name }}
+      • year: {{ tvdb.raw.movie.year }}
+      • tvdb_id: {{ tvdb.raw.movie.tvdb_id }}
+      • runtime: {{ tvdb.raw.movie.runtime }} min
+    {% if tvdb.raw.extras.movies_extended %}
+    ► RAW Extras:
+      • movies_extended: Extended data available
+    {% endif %}
+  {% endif %}
+  {% if tvdb.raw.show %}
+    ► RAW Show Data:
+      • name: {{ tvdb.raw.show.name }}
+      • tvdb_id: {{ tvdb.raw.show.tvdb_id }}
+    {% if tvdb.raw.season %}
+      • season_number: {{ tvdb.raw.season.number }}
+    {% endif %}
+    {% if tvdb.raw.episode %}
+      • episode_number: {{ tvdb.raw.episode.number }}
+    {% endif %}
+    {% if tvdb.raw.extras %}
+    ► RAW Extras:
+      {% if tvdb.raw.extras.series_extended %}
+      • series_extended: Extended data available
+      {% endif %}
+      {% if tvdb.raw.extras.series_artworks %}
+      • series_artworks: Artworks available
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  {% elif tvdb and tvdb.status and tvdb.status.success %}
+  
+  ⚠ RAW data not available. Set 'include-raw: true' in tvdb config.
+  {% endif %}
+  
+  {% if omdb and omdb.raw %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ OMDb Plugin - RAW API Responses                      [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if omdb.raw.movie %}
+    ► RAW Movie Data:
+      • name: {{ omdb.raw.movie.name }}
+      • year: {{ omdb.raw.movie.year }}
+      • rated: {{ omdb.raw.movie.rated }}
+      • runtime: {{ omdb.raw.movie.runtime }}
+      • imdb_rating: {{ omdb.raw.movie.imdb_rating }}/10
+      • imdb_id: {{ omdb.raw.movie.imdb_id }}
+      • genre: {{ omdb.raw.movie.genre }}
+      • director: {{ omdb.raw.movie.director }}
+  {% endif %}
+  {% if omdb.raw.show %}
+    ► RAW Show Data:
+      • name: {{ omdb.raw.show.name }}
+      • year: {{ omdb.raw.show.year }}
+      • imdb_rating: {{ omdb.raw.show.imdb_rating }}/10
+      • imdb_id: {{ omdb.raw.show.imdb_id }}
+      • total_seasons: {{ omdb.raw.show.total_seasons }}
+      • genre: {{ omdb.raw.show.genre }}
+  {% endif %}
+  {% elif omdb and omdb.status and omdb.status.success %}
+  
+  ⚠ RAW data not available. Set 'include-raw: true' in omdb config.
+  {% endif %}
+  
+  {% if tvmaze and tvmaze.raw %}
+  ┌─────────────────────────────────────────────────────────────┐
+  │ TVMaze Plugin - RAW API Responses                    [✓ OK]│
+  └─────────────────────────────────────────────────────────────┘
+  {% if tvmaze.raw.show %}
+    ► RAW Show Data:
+      • name: {{ tvmaze.raw.show.name }}
+      • tvmaze_id: {{ tvmaze.raw.show.tvmaze_id }}
+      • status: {{ tvmaze.raw.show.status }}
+      • premiered: {{ tvmaze.raw.show.premiered }}
+      • rating: {{ tvmaze.raw.show.rating }}/10
+      • network: {{ tvmaze.raw.show.network }}
+    {% if tvmaze.raw.episode %}
+    ► RAW Episode Data:
+      • episode_id: {{ tvmaze.raw.episode.id }}
+      • name: {{ tvmaze.raw.episode.name }}
+      • season: {{ tvmaze.raw.episode.season }}
+      • number: {{ tvmaze.raw.episode.number }}
+    {% endif %}
+    {% if tvmaze.raw.extras %}
+    ► RAW Extras:
+      {% if tvmaze.raw.extras.shows_cast %}
+      • shows_cast: {{ tvmaze.raw.extras.shows_cast|length }} cast members
+      {% endif %}
+      {% if tvmaze.raw.extras.shows_crew %}
+      • shows_crew: {{ tvmaze.raw.extras.shows_crew|length }} crew members
+      {% endif %}
+      {% if tvmaze.raw.extras.shows_images %}
+      • shows_images: {{ tvmaze.raw.extras.shows_images|length }} images
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  {% elif tvmaze and tvmaze.status and tvmaze.status.success %}
+  
+  ⚠ RAW data not available. Set 'include-raw: true' in tvmaze config.
+  {% endif %}
