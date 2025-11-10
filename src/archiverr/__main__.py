@@ -157,10 +157,11 @@ def main():
         loaded_plugins=all_plugins
     )
     
-    # Phase 6.1: Add task results to match.tasks
+    # Phase 6.1: Add task results to match.globals.output.tasks
     for match_index, task_results_list in match_task_results.items():
         if match_index < len(api_response['matches']):
             match = api_response['matches'][match_index]
+            match_output = match.get('globals', {}).get('output', {})
             
             # Format task results for storage
             formatted_tasks = []
@@ -176,14 +177,12 @@ def main():
                 if task_result.get('type') == 'print':
                     task_entry['rendered'] = task_result.get('output')
                 elif task_result.get('type') == 'save':
-                    task_entry['source'] = task_result.get('source')
                     task_entry['destination'] = task_result.get('destination')
-                    task_entry['dry_run'] = task_result.get('dry_run', True)
                 
                 formatted_tasks.append(task_entry)
             
-            # Update match.tasks (root level, not in globals.output)
-            match['tasks'] = formatted_tasks
+            # Update match.globals.output.tasks (NO paths - redundant)
+            match_output['tasks'] = formatted_tasks
     
     # Update globals with task count
     api_response['globals']['status']['tasks'] = len(all_task_results)

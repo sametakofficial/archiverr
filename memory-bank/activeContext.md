@@ -1,80 +1,97 @@
 # Active Context
 
-## Current Focus (November 10, 2025)
-**SYSTEM REFINEMENT** - Compact API response system operational, folder structure cleaned, MongoDB architecture planned. Focus on plugin normalization improvements.
+## Current Focus (November 11, 2025)
+**API RESPONSE v4 FINALIZED** - Simplified & plugin-agnostic structure complete. Validation removed from core, input simplified, external task naming fixed. MongoDB backend ready for implementation.
 
 ---
 
 ## Recent Major Changes
 
-### 1. Compact Response System (November 10, 2025)
+### 1. API Response v4 - Simplified & Plugin-Agnostic (November 11, 2025)
 
-**NEW FEATURE** - Structural simplification for API responses.
+**CRITICAL ARCHITECTURE** - Removed plugin-agnostic violations, simplified structure.
 
 #### What Changed
 
-**Purpose**: Generate compact API response that shows STRUCTURE, not content.
+**Purpose**: Remove core's knowledge of plugin-specific concepts like validation.
+
+**Changes Made**:
+1. ❌ **Removed `globals.summary.validations`** - Core shouldn't aggregate validation (plugin concern)
+2. ❌ **Removed `match.globals.output.validations`** - Each plugin manages its own in `plugin.globals.validation`
+3. ❌ **Removed `match.globals.output.paths`** - Redundant (use `tasks[].destination`)
+4. ✅ **Simplified `match.globals.input` → `input_path`** - Just path string, no object
+5. ✅ **Fixed external task naming** - No more "unnamed", preserves config name
+
+**Implementation**: `src/archiverr/models/response_builder.py`, `__main__.py`, `task_manager.py`
+
+```javascript
+// API Response v4 Structure
+{
+  globals: {
+    status: {...},
+    summary: {                      // ✅ NO validations
+      input_plugin_used,
+      output_plugins_used,
+      categories,
+      total_size_bytes,
+      total_duration_seconds
+    },
+    config: {options, plugins, tasks}
+  },
+  matches: [{
+    globals: {
+      index: 0,
+      input_path: "/path/file.mkv",  // ✅ Just string
+      status: {...},
+      output: {
+        tasks: [...]                  // ✅ ONLY tasks
+      }
+    },
+    plugins: {
+      tmdb: {
+        globals: {
+          status: {...},
+          validation: {...}           // ✅ Plugin-managed
+        },
+        movie: {...}
+      }
+    }
+  }]
+}
+```
+
+**Benefits**:
+1. **Plugin-Agnostic** - Core never aggregates validation
+2. **No Redundancy** - Config once, tasks results once, paths from tasks
+3. **Simplified Input** - Just path string, no metadata duplication
+4. **Clean Separation** - Plugins manage their own validation
+5. **External Tasks Fixed** - Proper name preservation
+
+**MongoDB Ready**: Structure maps directly to collections without transformation
+
+---
+
+### 2. Compact Response System (November 10, 2025)
+
+**NEW FEATURE** - Structural simplification for API responses.
+
+#### Implementation
+
+**Module**: `src/archiverr/core/reports/response_simplifier.py`
 
 **Strategy**: Type-based simplification - keep 1 example per type
 - Arrays of objects → 1 object example
 - Arrays of strings → 1 string example  
 - Arrays of numbers → 1 number example
-- Mixed arrays → 1 of each type
-
-**Implementation**: `src/archiverr/core/reports/response_simplifier.py`
-
-```python
-class ResponseSimplifier:
-    def _simplify_list(self, data: List[Any]) -> List[Any]:
-        seen_types = set()
-        examples = []
-        
-        for item in data:
-            item_type = "object" if isinstance(item, dict) else type(item).__name__
-            
-            if item_type not in seen_types:
-                seen_types.add(item_type)
-                examples.append(item)
-        
-        return [self.simplify(item) for item in examples]
-```
 
 **Results**:
 - 101 cast members → 1 example (99% reduction)
-- 16 keywords → 1 example
-- 2 matches → 1 example (same type)
 - File size: 145 KB → 9 KB (94% reduction)
 
 **Use Cases**:
 1. AI analysis for plugin normalization
 2. API structure documentation
 3. MongoDB schema planning
-4. Quick response structure preview
-
----
-
-### 2. Schema System Removal (November 10, 2025)
-
-**SIMPLIFICATION** - Removed auto-schema generation system.
-
-#### What Was Removed
-
-**Deleted Directories**:
-- `src/archiverr/core/schema_system/` (858 lines)
-- `src/archiverr/core/schema/`
-
-**Deleted Files**:
-- All `response.schema.json` files from plugins
-- Schema test files
-- Schema documentation
-
-**Why Removed**:
-- MongoDB is schemaless
-- Runtime overhead
-- Over-engineering
-- Compact system provides better structure visibility
-
-**Total Code Reduction**: -3,500 lines (95% less complexity)
 
 ---
 
@@ -486,6 +503,45 @@ OMDb: ✓ çalışıyor (movie: Mr. & Mrs. Smith, 2005, IMDb: 6.5)
 
 ## Active Decisions
 
+### Plugin-Agnostic Validation (November 11, 2025)
+
+**Decision:** Core MUST NOT aggregate or manage validation
+
+**Rationale:**
+- Validation is domain-specific knowledge (plugin concern)
+- Core doesn't know what "valid" means for each plugin
+- Each plugin defines its own validation criteria
+- Core just executes tasks and manages workflow
+
+**Implementation:**
+```javascript
+// Each plugin stores its own validation
+plugin.globals.validation = {
+  tests_passed: 1,
+  tests_total: 1,
+  details: {...}
+}
+```
+
+**Status:** ENFORCED (v4)
+
+### Simplified Input Structure (November 11, 2025)
+
+**Decision:** `match.globals.input_path` is just a string
+
+**Rationale:**
+- No need for `{path, virtual, category}` object
+- `virtual` and `category` are plugin metadata
+- Path is the only core concern
+- Simpler = better
+
+**Implementation:**
+```javascript
+match.globals.input_path = "/path/to/file.mkv"  // Just string
+```
+
+**Status:** IMPLEMENTED (v4)
+
 ### Expects System Design
 
 **Decision:** Expects field specifies data keys, not plugin names
@@ -612,26 +668,24 @@ class Plugin:
 ## Next Steps
 
 ### Immediate (In Progress 🔄)
-- [x] **API Response Structure Refactor** (COMPLETED)
-  - [x] Renamed `match_globals` → `globals`
-  - [x] Folder structure cleaned (`_system` removed)
-  - [x] Imports updated
+- [x] **API Response v4** (COMPLETED November 11)
+  - [x] Removed validation aggregation from core
+  - [x] Simplified input to just path string
+  - [x] Removed redundant paths object
+  - [x] Fixed external task naming
+  - [x] Plugin-agnostic violations eliminated
   
-- [x] **Compact Response System** (COMPLETED)
+- [x] **Compact Response System** (COMPLETED November 10)
   - [x] Type-based structural simplification
   - [x] Dual report generation (full + compact)
   - [x] 94% file size reduction
-  
-- [x] **Schema System** (REMOVED)
-  - [x] Decided against auto-schema (MongoDB is schemaless)
-  - [x] Compact system provides better structure visibility
-  - [x] 3,500 lines removed
 
-- [ ] **Plugin Normalization System** (HIGH PRIORITY - NEXT)
-  - [ ] Analyze compact responses for normalization opportunities
-  - [ ] Design unified response structure
-  - [ ] Implement per-plugin normalizers
-  - [ ] Test with all 4 metadata plugins
+- [ ] **MongoDB Backend** (HIGH PRIORITY - NEXT)
+  - [ ] Implement Beanie ODM models
+  - [ ] Create async repositories
+  - [ ] Integrate with main execution
+  - [ ] Test save/load cycle
+  - [ ] Motor + Beanie stack ready
 
 ### Short Term
 - [ ] MongoDB integration (architecture ready)
@@ -694,9 +748,9 @@ class Plugin:
 
 ## Status Summary
 
-**Version:** 2.2.0 (Clean Architecture Achieved)
+**Version:** 2.3.0 (API Response v4 - Simplified & Plugin-Agnostic)
 **Status:** Stable and Production Ready
-**Last Major Update:** November 10, 2025
+**Last Major Update:** November 11, 2025
 
 **Working:**
 - ✅ All plugins (scanner, file-reader, ffprobe, renamer, tmdb, tvdb, tvmaze, omdb)
@@ -705,24 +759,27 @@ class Plugin:
 - ✅ Category propagation
 - ✅ Template system (Jinja2)
 - ✅ Task system (print, save, summary)
-- ✅ External tasks
-- ✅ Normalized metadata (all 4 providers)
-- ✅ Compact response system (structural simplification)
+- ✅ External tasks (with proper naming)
+- ✅ API Response v4 (simplified, plugin-agnostic)
+- ✅ Plugin-managed validation
+- ✅ Simplified input_path
+- ✅ Compact response system
 - ✅ Dual reports (full + compact)
-- ✅ Clean folder structure (no _system suffixes)
-- ✅ Consistent naming (globals everywhere)
+- ✅ MongoDB structure documented
 
 **Next Focus:**
-- Plugin normalization improvements (use compact responses)
-- MongoDB integration (architecture ready)
-- Unit tests
+- MongoDB backend implementation (Motor + Beanie)
+- FastAPI integration preparation
+- Unit tests for v4 structure
 - Config validation
 
 **Known Issues:**
 - None (system stable)
 
 **Code Health:**
-- 3,500 lines removed (schema system)
-- 94% file size reduction (compact system)
-- Clean architecture maintained
+- Plugin-agnostic violations eliminated
+- Validation properly delegated to plugins
+- Input structure simplified
+- External task naming fixed
+- MongoDB-ready structure
 - Zero technical debt

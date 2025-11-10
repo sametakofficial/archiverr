@@ -138,10 +138,9 @@ class TaskManager:
         
         current_match = matches[current_index]
         
-        # Use generic input metadata from match.globals (plugin-agnostic)
+        # Use generic input_path from match.globals (plugin-agnostic)
         match_globals = current_match.get('globals', {})
-        input_metadata = match_globals.get('input', {})
-        source = input_metadata.get('path')
+        source = match_globals.get('input_path', '')
         
         if not source or not destination:
             return None
@@ -218,12 +217,17 @@ class TaskManager:
             
             # External file can be a single task or a list of tasks
             if isinstance(external_config, dict):
-                # Single task
+                # Single task - preserve parent task name if not specified
+                if 'name' not in external_config and task_name != 'unnamed':
+                    external_config['name'] = task_name
                 return self._execute_task(external_config, api_response, current_index, dry_run)
             elif isinstance(external_config, list):
                 # Multiple tasks - execute all and return last result
                 result = None
                 for sub_task in external_config:
+                    # Preserve parent task name if not specified
+                    if 'name' not in sub_task and task_name != 'unnamed':
+                        sub_task['name'] = task_name
                     result = self._execute_task(sub_task, api_response, current_index, dry_run)
                 return result
             

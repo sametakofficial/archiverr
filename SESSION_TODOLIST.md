@@ -1,29 +1,50 @@
 # 🎯 Session TODO List - API Response Enhancement & MongoDB Integration
 
-## ✅ TAMAMLANAN FAZLAR: 1-6
+## ✅ TAMAMLANAN FAZLAR: 1-6.6
 
-**Son Güncelleme**: 2025-11-10 22:51  
-**Durum**: API Response v2 tamamlandı, MongoDB entegrasyonu bekliyor
+**Son Güncelleme**: 2025-11-11 00:46  
+**Durum**: API Response v4 (Simplified & Plugin-Agnostic) tamamlandı, MongoDB entegrasyonu bekliyor
 
 ### 📊 İlerleme Özeti
-- **Tamamlanan**: Phase 1-6 (API Response v2, Validation, Template Resolution)
-- **Bekleyen**: Phase 7-10 (MongoDB, Testing, Documentation)
-- **Değiştirilen Dosyalar**: 11 dosya (~800 LOC)
-- **Syntax Validation**: ✅ PASS
+- **Tamamlanan**: Phase 1-6.6 (API Response v4 Final, Simplified)
+- **Bekleyen**: Phase 7-10 (MongoDB Backend, Testing, Documentation)
+- **Değiştirilen Dosyalar**: 11 dosya (~900 LOC)
+- **Syntax Validation**: ✅ PASS (v4)
 
-### 🎯 Yeni API Response Yapısı
+### 🎯 Final API Response Yapısı (v4 - Simplified)
 ```javascript
 {
-  globals: {status, summary, options, plugins, tasks},
+  globals: {
+    status: {...},
+    summary: {                   // ✅ NO validations (plugin-agnostic)
+      input_plugin_used: "scanner",
+      output_plugins_used: [...],
+      categories: [...],
+      total_size_bytes, total_duration_seconds
+    },
+    config: {                    // ✅ Single source of truth
+      options: {...},
+      plugins: {...},
+      tasks: [...]               // Task DEFINITIONS
+    }
+  },
   matches: [
     {
-      globals: {index, input, status},
-      options: {...},
-      tasks: [...],
+      globals: {
+        index: 0,
+        input_path: "/path/file.mkv",  // ✅ Just string (simplified)
+        status: {...},
+        output: {
+          tasks: [...]           // ✅ ONLY task RESULTS
+        }
+      },
       plugins: {
         tmdb: {
-          globals: {status, options, validation},
-          movie: {...}, episode, season, show
+          globals: {
+            status: {...},
+            validation: {...}    // ✅ Plugin-managed
+          },
+          movie: {...}           // Plugin data
         }
       }
     }
@@ -31,12 +52,13 @@
 }
 ```
 
-### 🔧 Temel Değişiklikler
-1. **Plugin Isolation**: `plugin.globals` reserved, diğer tüm alanlar plugin kontrolünde
-2. **Tasks Root Level**: `match.tasks[]` (artık globals.output.tasks değil)
-3. **Config Snapshot**: Hem global hem match level'da
-4. **Validation System**: TMDb, OMDb, TVDb (duration matching ±10min)
-5. **Template Routing**: Smart routing (plugin vs globals vs options)
+### 🔧 v3 → v4 Değişiklikleri (Plugin-Agnostic)
+1. ❌ **globals.summary.validations KALDIRILDI** - Core validation aggregate etmemeli (plugin concern)
+2. ❌ **match.globals.output.validations KALDIRILDI** - Plugin kendi yönetsin
+3. ❌ **match.globals.output.paths KALDIRILDI** - Redundant (tasks[].destination kullan)
+4. ✅ **match.globals.input → input_path** - Basitleştirildi (sadece string)
+5. ✅ **External task name fix** - Artık unnamed değil, config'deki ismi kullanıyor
+6. ✅ **Plugin validation preserved** - Her plugin `plugin.globals.validation` ile kendi manage eder
 
 ---
 
@@ -98,8 +120,9 @@
   ```
 - [x] **Plugin Isolation**: Sadece `plugin.globals` reserved, geri kalan plugin kontrolünde
 
-### 1.5 match.tasks & plugin.globals (YENİ YAPI) ✅
-- [x] `match.tasks`: Task execution results (root level)
+### 1.5 match.globals.output (DÜZELTİLDİ v3) ✅
+- [x] **YENİ**: `match.globals.output` geri geldi
+- [x] `match.globals.output.tasks`: Task execution results
   ```javascript
   tasks: [
     {
@@ -112,28 +135,27 @@
       name: "save_nfo",
       type: "save",
       success: true,
-      source: "/source.mkv",
-      destination: "/path/file.nfo",
-      dry_run: true
+      destination: "/path/file.nfo"
     }
   ]
   ```
-- [x] `plugin.globals.validation`: Her plugin kendi validation
+- [x] `match.globals.output.validations`: Plugin validations summary
   ```javascript
-  tmdb: {
-    globals: {
-      status: {...},
-      options: {...},
-      validation: {
-        tests_passed: 1,
-        tests_total: 1,
-        details: {duration_match: {...}}
-      }
-    },
-    movie: {...}  // Plugin data
+  validations: {
+    tmdb: {tests_passed: 1, tests_total: 1, details: {...}},
+    omdb: {...},
+    summary: {total_tests: 2, accuracy: 1.0}
   }
   ```
-- [x] `paths` kaldırıldı → `match.tasks[].destination` kullan
+- [x] `match.globals.output.paths`: Output file paths
+  ```javascript
+  paths: {nfo_path: "/path.nfo", renamed_path: null}
+  ```
+
+### 1.6 Kaldırılan Alanlar (v3) ✅
+- [x] ❌ `match.options` - Duplicate (globals.config.options kullan)
+- [x] ❌ `match.tasks` - Yanlış yer (globals.output.tasks kullan)
+- [x] ❌ `plugin.globals.options` - Gereksiz (globals.config.plugins kullan)
 
 ---
 
@@ -287,87 +309,218 @@
 
 ---
 
-## 📌 PHASE 7: MongoDB Integration
+---
+
+## 📌 PHASE 6.5: API Response v3 Corrections ✅ COMPLETE
+(Superseded by v4)
+
+---
+
+## 📌 PHASE 6.6: API Response v4 - Simplified & Plugin-Agnostic ✅ COMPLETE
+
+### 6.5.1 Structure Fixes ✅
+- [x] Remove `match.options` (duplicate)
+- [x] Restore `match.globals.output` (tasks, validations, paths)
+- [x] Move `match.tasks` → `match.globals.output.tasks`
+- [x] Remove `plugin.globals.options` (duplicate)
+- [x] Wrap config: `globals.config` = {options, plugins, tasks}
+
+### 6.5.2 Template Manager Update ✅
+- [x] Update context for new structure
+- [x] `$options` → `api_response.globals.config.options`
+- [x] `$output` → `match.globals.output`
+- [x] Remove `match.options` and `match.tasks` references
+
+### 6.5.3 Main Entry Point Update ✅
+- [x] Task results → `match.globals.output.tasks`
+- [x] Paths tracking → `match.globals.output.paths`
+
+---
+
+## 📌 PHASE 6.6: API Response v4 - Simplified & Plugin-Agnostic ✅ COMPLETE
+
+### 6.6.1 Remove Plugin-Agnostic Violations ✅
+- [x] ❌ Remove `globals.summary.validations` - Core shouldn't aggregate
+- [x] ❌ Remove `match.globals.output.validations` - Plugin concern
+- [x] ❌ Remove `match.globals.output.paths` - Redundant
+- [x] ✅ Validation stays in `plugin.globals.validation` (plugin-managed)
+
+### 6.6.2 Simplify Input Structure ✅
+- [x] `match.globals.input` → `match.globals.input_path` (just string)
+- [x] Remove `{path, virtual, category}` object
+- [x] Update `task_manager.py` to use `input_path`
+
+### 6.6.3 Fix External Task Naming ✅
+- [x] External tasks artık "unnamed" değil
+- [x] Config'deki task name preserve ediliyor
+
+### 6.6.4 Documentation ✅
+- [x] `MONGODB_STRUCTURE_FINAL.md` created
+- [x] Full v4 structure documented
+- [x] Query examples (Beanie)
+- [x] Data flow (async)
+
+---
+
+## 📌 PHASE 7: MongoDB Backend (FastAPI Ready) ⏳ READY TO START
 
 ### 7.1 Dependencies
-- [ ] `requirements.txt` → `pymongo>=4.0.0` ekle
-- [ ] `.env.example` → MongoDB URI ekle
+- [ ] `requirements.txt` güncelle:
+  - [ ] `pymongo>=4.6.0` (async support)
+  - [ ] `motor>=3.3.0` (async MongoDB driver for FastAPI)
+  - [ ] `beanie>=1.23.0` (ODM, opsiyonel ama önerilen)
+  - [ ] `pydantic>=2.0.0` (zaten var, validation için)
+- [ ] `.env.example` → MongoDB settings ekle:
+  ```
+  MONGODB_URI=mongodb://localhost:27017
+  MONGODB_DATABASE=archiverr
+  MONGODB_BRANCH=main
+  ```
 
-### 7.2 Backend Structure
+### 7.2 Backend Structure (Python-Only, FastAPI Ready)
 - [ ] `src/archiverr/backend/` klasör oluştur
 - [ ] `backend/__init__.py`
-- [ ] `backend/mongo_client.py` → Connection manager
-- [ ] `backend/repositories/` klasör oluştur
+- [ ] `backend/database.py` → Motor async connection manager
+  ```python
+  from motor.motor_asyncio import AsyncIOMotorClient
+  from beanie import init_beanie
+  
+  class Database:
+      client: AsyncIOMotorClient = None
+      
+      async def connect(uri: str, database: str):
+          # Connection pooling, retry logic
+      
+      async def disconnect():
+          # Cleanup
+  ```
+- [ ] `backend/models/` klasör oluştur (Beanie ODM models)
+- [ ] `backend/repositories/` klasör oluştur (Repository pattern)
 
-### 7.3 Repositories
+### 7.3 Beanie ODM Models
+- [ ] `models/branch.py`
+  ```python
+  from beanie import Document
+  from pydantic import Field
+  from datetime import datetime
+  
+  class Branch(Document):
+      name: str = Field(unique=True)
+      description: str = ""
+      status: str = "active"  # active, archived
+      last_commit_id: Optional[ObjectId] = None
+      created_at: datetime = Field(default_factory=datetime.utcnow)
+      updated_at: datetime = Field(default_factory=datetime.utcnow)
+      
+      class Settings:
+          name = "branches"
+          indexes = [
+              "name",
+              ["status", ("updated_at", -1)]
+          ]
+  ```
+- [ ] `models/commit.py`
+- [ ] `models/api_response.py`
+- [ ] `models/diagnostics.py`
+
+### 7.4 Repositories (Async)
 - [ ] `repositories/branch_repository.py`
   ```python
+  from backend.models.branch import Branch
+  
   class BranchRepository:
-      def create(name, description)
-      def get(name)
-      def list_all(status="active")
-      def update_last_commit(name, commit_id)
+      async def create(self, name: str, description: str) -> Branch:
+          branch = Branch(name=name, description=description)
+          await branch.insert()
+          return branch
+      
+      async def get(self, name: str) -> Optional[Branch]:
+          return await Branch.find_one(Branch.name == name)
+      
+      async def list_all(self, status: str = "active") -> List[Branch]:
+          return await Branch.find(Branch.status == status).to_list()
+      
+      async def update_last_commit(self, name: str, commit_id: ObjectId):
+          branch = await self.get(name)
+          branch.last_commit_id = commit_id
+          await branch.save()
   ```
 - [ ] `repositories/commit_repository.py`
-  ```python
-  class CommitRepository:
-      def create(branch_id, globals, api_response_id)
-      def get(commit_id)
-      def list_by_branch(branch_id, limit=50)
-  ```
 - [ ] `repositories/api_response_repository.py`
-  ```python
-  class APIResponseRepository:
-      def save(commit_id, api_response)
-      def get(commit_id)
-  ```
 - [ ] `repositories/diagnostics_repository.py`
-  ```python
-  class DiagnosticsRepository:
-      def save_logs(commit_id, logs)
-      def get_logs(commit_id)
-  ```
 
-### 7.4 Collections & Indexes
-- [ ] Collection: `branches`
-  - Index: `{name: 1}` unique
-  - Index: `{status: 1, updated_at: -1}`
-- [ ] Collection: `commits`
-  - Index: `{branch_id: 1, created_at: -1}`
-  - Index: `{api_response_id: 1}`
-- [ ] Collection: `api_responses`
-  - Index: `{commit_id: 1}` unique
-  - TTL: `{created_at: 1}` 90 days
-- [ ] Collection: `diagnostics`
-  - Index: `{commit_id: 1}`
-  - TTL: `{created_at: 1}` 7 days
+### 7.5 Collections & Indexes (via Beanie)
+Beanie models yukarıda index tanımları içeriyor. Ek notlar:
+- [ ] `branches`: name unique, status+updated_at compound
+- [ ] `commits`: branch_id+created_at, api_response_id
+- [ ] `api_responses`: commit_id unique, TTL 90 days
+- [ ] `diagnostics`: commit_id, TTL 7 days
 
-### 7.5 Main Integration
+### 7.6 Main Integration (Async)
 - [ ] `__main__.py` MongoDB entegrasyonu
 - [ ] Config'den MongoDB enable flag al
 - [ ] API response oluştuktan sonra:
   ```python
-  if mongodb_enabled:
-      # 1. Get/Create branch
-      branch = branch_repo.get_or_create("main")
+  import asyncio
+  from backend.database import Database
+  from backend.repositories import BranchRepo, CommitRepo, APIResponseRepo
+  
+  async def save_to_mongodb(api_response, config, debugger):
+      if not config.get('mongodb', {}).get('enabled'):
+          return
       
-      # 2. Save API response
-      api_response_id = api_response_repo.save(api_response)
-      
-      # 3. Create commit
-      commit = commit_repo.create(
-          branch_id=branch['_id'],
-          globals=api_response['globals'],  # Direkt copy
-          api_response_id=api_response_id,
-          created_at=api_response['globals']['status']['started_at']
+      # Initialize connection
+      await Database.connect(
+          uri=config['mongodb']['uri'],
+          database=config['mongodb']['database']
       )
       
-      # 4. Save debug logs
-      diagnostics_repo.save_logs(commit['_id'], debugger.get_logs())
+      # Repositories
+      branch_repo = BranchRepo()
+      commit_repo = CommitRepo()
+      api_repo = APIResponseRepo()
       
-      # 5. Update branch
-      branch_repo.update_last_commit(branch['name'], commit['_id'])
+      # 1. Get/Create branch
+      branch = await branch_repo.get(config['mongodb']['branch'])
+      if not branch:
+          branch = await branch_repo.create(
+              name=config['mongodb']['branch'],
+              description="Main branch"
+          )
+      
+      # 2. Save API response
+      api_response_doc = await api_repo.save(api_response)
+      
+      # 3. Create commit
+      commit = await commit_repo.create(
+          branch_id=branch.id,
+          globals=api_response['globals'],
+          api_response_id=api_response_doc.id
+      )
+      
+      # 4. Update branch
+      await branch_repo.update_last_commit(branch.name, commit.id)
+      
+      await Database.disconnect()
+  
+  # In main:
+  if config.get('mongodb', {}).get('enabled'):
+      asyncio.run(save_to_mongodb(api_response, config, debugger))
   ```
+
+---
+
+### 7.7 FastAPI Preparation (Future)
+- [ ] Backend zaten async, FastAPI entegrasyonu kolay olacak
+- [ ] `backend/api/` klasör oluşturulacak
+- [ ] Endpoints: `/branches`, `/commits`, `/matches`, `/diagnostics`
+- [ ] WebSocket support for live updates
+
+**Not**: Node.js GEREKSIZ. Python stack yeterli:
+- **Motor**: Async MongoDB driver
+- **Beanie**: ODM (type-safe, Pydantic integration)
+- **FastAPI**: Modern async web framework
+- **Svelte**: Frontend (ayrı proje)
 
 ---
 
@@ -377,14 +530,15 @@
 - [ ] MongoDB settings:
   ```yaml
   mongodb:
-    enabled: true
-    uri: "mongodb://localhost:27017"
-    database: "archiverr"
-    branch: "main"
+    enabled: false  # Default: disabled
+    uri: "${MONGODB_URI}"  # From .env
+    database: "${MONGODB_DATABASE}"
+    branch: "${MONGODB_BRANCH}"
   ```
 - [ ] Validation settings:
   ```yaml
   validation:
+    enabled: true
     duration_tolerance_seconds: 600
   ```
 

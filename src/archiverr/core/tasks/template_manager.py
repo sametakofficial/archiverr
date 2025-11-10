@@ -60,15 +60,18 @@ class TemplateManager:
         # Create Jinja2 context
         api_globals = context.get('globals', {})
         match_globals = current_match.get('globals', {})
-        match_options = current_match.get('options', {})
-        match_tasks = current_match.get('tasks', [])
+        match_output = match_globals.get('output', {})
         match_plugins = current_match.get('plugins', {})
+        
+        # Get options from api_response.globals.config
+        api_config = api_globals.get('config', {})
+        global_options = api_config.get('options', {})
         
         jinja_context = {
             'apiresponse': context,  # Full API response
             'globals': match_globals,  # Current match globals
-            'options': match_options,  # Current match options
-            'tasks': match_tasks,  # Current match tasks
+            'options': global_options,  # From api_response.globals.config.options
+            'output': match_output,  # match.globals.output (tasks, validations, paths)
             'index': current_index,
             'total': len(matches),
             'matches': matches  # For indexed access

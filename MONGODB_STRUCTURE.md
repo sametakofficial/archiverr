@@ -1,67 +1,64 @@
-# 🗄️ MongoDB Collections Structure - Final
+# MongoDB Collections - API Response v4 Final
 
-## Overview
-
-**4 Collections:**
-1. `branches` - Git-like branch management
-2. `commits` - Immutable execution records
-3. `api_responses` - Full API response storage
-4. `diagnostics` - Debug logs
+**Son Güncelleme**: 2025-11-11 00:46  
+**Durum**: API Response v4 - Simplified & Plugin-Agnostic  
+**Backend**: Python Motor + Beanie ODM (FastAPI ready)
 
 ---
 
-## 1️⃣ Collection: branches
+## 🎯 Core Principles
 
-**Purpose:** Git-like branch management for different workflows
+### 1. Plugin-Agnostic Architecture
+- Core NEVER knows plugin-specific concepts
+- Validation is plugin responsibility, not global concern
+- Input/output paths are plugin-managed
+
+### 2. No Redundancy
+- Config stored once: `globals.config`
+- Task definitions: `globals.config.tasks`
+- Task execution results: `match.globals.output.tasks`
+- NO separate paths object (use tasks[].destination)
+
+### 3. Simplified Structure
+- `match.globals.input_path` - Just the path string
+- `match.globals.output.tasks` - Only task execution results
+- Plugins manage their own validation data
+
+---
+
+## 📊 Collection: branches
 
 ```javascript
 {
-  _id: ObjectId("673..."),
-  name: "main",                    // Unique branch name
+  _id: ObjectId("673abc"),
+  name: "main",                    // Unique
   description: "Main production branch",
-  created_at: ISODate("2025-11-10T14:00:00Z"),
-  updated_at: ISODate("2025-11-10T17:14:42Z"),
-  metadata: {
-    total_commits: 15,
-    last_commit_id: ObjectId("674...")
-  },
-  status: "active"                 // "active", "archived", "deleted"
+  status: "active",                // active, archived
+  last_commit_id: ObjectId("674def"),
+  created_at: ISODate("2025-11-10T17:10:00Z"),
+  updated_at: ISODate("2025-11-10T17:14:34Z")
 }
 ```
 
-**Indexes:**
-```javascript
-db.branches.createIndex({ name: 1 }, { unique: true })
-db.branches.createIndex({ status: 1, updated_at: -1 })
-```
-
-**Example Queries:**
-```javascript
-// Get main branch
-db.branches.findOne({ name: "main" })
-
-// List active branches
-db.branches.find({ status: "active" }).sort({ updated_at: -1 })
-```
+**Indexes**:
+- `{name: 1}` unique
+- `{status: 1, updated_at: -1}`
 
 ---
 
-## 2️⃣ Collection: commits
-
-**Purpose:** Immutable execution records (like git commits)
+## 📊 Collection: commits
 
 ```javascript
 {
-  _id: ObjectId("674..."),
-  branch_id: ObjectId("673..."),
-  parent_commit_id: ObjectId("672..."),  // null for first commit
+  _id: ObjectId("674def"),
+  branch_id: ObjectId("673abc"),
   
-  // API Response globals (DIREKT COPY)
+  // SNAPSHOT: globals from api_response (immutable)
   globals: {
     status: {
       success: true,
       matches: 2,
-      tasks: 12,
+      tasks: 4,
       errors: 0,
       started_at: "2025-11-10T17:14:34.984764",
       finished_at: "2025-11-10T17:14:42.344800",
@@ -72,90 +69,63 @@ db.branches.find({ status: "active" }).sort({ updated_at: -1 })
       output_plugins_used: ["ffprobe", "renamer", "tmdb", "omdb"],
       categories: ["movie", "show"],
       total_size_bytes: 6181584889,
-      total_duration_seconds: 7199.584
+      total_duration_seconds: 7199.58
     },
-    options: {
-      debug: true,
-      dry_run: true,
-      hardlink: true
-    },
-    plugins: {
-      scanner: { enabled: true, targets: [...], ... },
-      ffprobe: { enabled: true, timeout: 15 },
-      tmdb: { enabled: true, api_key: "...", lang: "tr" },
-      // ... tüm plugin configs
-    },
-    tasks: [
-      { name: "print_match_header", type: "print", template: "..." },
-      { name: "save_nfo", type: "save", destination: "..." },
-      // ... tüm tasks
-    ]
+    config: {                      // ✅ Single source of truth
+      options: {
+        debug: true,
+        dry_run: true,
+        hardlink: true
+      },
+      plugins: {
+        scanner: {enabled: true, targets: [...], recursive: true, ...},
+        ffprobe: {enabled: true, timeout: 15},
+        tmdb: {enabled: true, api_key: "***", lang: "tr"},
+        omdb: {enabled: true, api_key: "***"},
+        tvdb: {enabled: true, api_key: "***"},
+        renamer: {enabled: true}
+      },
+      tasks: [
+        {name: "print_match_header", type: "print", template: "..."},
+        {name: "save_nfo", type: "save", external: true, path: "tasks/save_nfo.yml"},
+        {name: "print_summary", type: "print", condition: "...", template: "..."}
+      ]
+    }
   },
   
-  // Reference to full API response
-  api_response_id: ObjectId("675..."),
+  // Reference to full data
+  api_response_id: ObjectId("675ghi"),
   
   // Commit metadata
-  title: "Processed 2 movies from torrents folder",
-  message: "Optional detailed commit message",
-  created_at: ISODate("2025-11-10T17:14:34.984764")  // SAME as globals.status.started_at
+  created_at: ISODate("2025-11-10T17:14:34.984764")
 }
 ```
 
-**Indexes:**
-```javascript
-db.commits.createIndex({ branch_id: 1, created_at: -1 })
-db.commits.createIndex({ api_response_id: 1 })
-db.commits.createIndex({ "globals.status.success": 1 })
-db.commits.createIndex({ "globals.summary.categories": 1 })
-```
-
-**Example Queries:**
-```javascript
-// Recent commits in main branch
-db.commits.find({ 
-  branch_id: ObjectId("673..."),
-  "globals.status.success": true 
-})
-.sort({ created_at: -1 })
-.limit(50)
-
-// Failed commits
-db.commits.find({ "globals.status.success": false })
-
-// Commits with movies
-db.commits.find({ "globals.summary.categories": "movie" })
-```
+**Indexes**:
+- `{branch_id: 1, created_at: -1}`
+- `{api_response_id: 1}`
 
 ---
 
-## 3️⃣ Collection: api_responses
-
-**Purpose:** Full API response storage (cold data)
+## 📊 Collection: api_responses
 
 ```javascript
 {
-  _id: ObjectId("675..."),
-  commit_id: ObjectId("674..."),
+  _id: ObjectId("675ghi"),
+  commit_id: ObjectId("674def"),
   
-  // FULL API RESPONSE (EXACT STRUCTURE)
+  // FULL API RESPONSE (exact structure from Archiverr)
   globals: {
-    status: { ... },      // Same as commit.globals.status
-    summary: { ... },     // Same as commit.globals.summary
-    options: { ... },     // Same as commit.globals.options
-    plugins: { ... },     // Same as commit.globals.plugins
-    tasks: [ ... ]        // Same as commit.globals.tasks
+    status: {...},        // Same as commit.globals.status
+    summary: {...},       // Same as commit.globals.summary
+    config: {...}         // Same as commit.globals.config
   },
   
   matches: [
     {
       globals: {
         index: 0,
-        input: {
-          path: "/home/samet/torrents/Mr. & Mrs. Smith (2005) BluRay 1080p DDP5.1 H.265 TSRG.mkv",
-          virtual: false,
-          category: "movie"
-        },
+        input_path: "/home/samet/torrents/Mr. & Mrs. Smith (2005).mkv",
         status: {
           success: true,
           success_plugins: ["scanner", "ffprobe", "renamer", "tmdb", "omdb"],
@@ -166,7 +136,7 @@ db.commits.find({ "globals.summary.categories": "movie" })
           duration_ms: 2535
         },
         output: {
-          tasks: [
+          tasks: [                        // ✅ Task execution results
             {
               name: "print_match_header",
               type: "print",
@@ -177,11 +147,61 @@ db.commits.find({ "globals.summary.categories": "movie" })
               name: "save_nfo",
               type: "save",
               success: true,
-              destination: "/path/to/file.nfo"
+              destination: "/path/to/Mr. & Mrs. Smith (2005).nfo"
             }
+          ]
+        }
+      },
+      plugins: {
+        scanner: {
+          globals: {
+            status: {success: true, started_at: "...", finished_at: "...", duration_ms: 12}
+          },
+          input: "/home/samet/torrents/Mr. & Mrs. Smith (2005).mkv",
+          virtual: false,
+          category: "movie"
+        },
+        ffprobe: {
+          globals: {
+            status: {success: true, ...}
+          },
+          video: {
+            codec: "hevc",
+            width: 1920,
+            height: 1080,
+            fps: 23.976,
+            bitrate: 6845123
+          },
+          audio: [
+            {codec: "eac3", channels: 6, sample_rate: 48000, bitrate: 640000}
           ],
-          validations: {
-            tmdb: {
+          container: {
+            format: "matroska",
+            size: 6181584889,
+            duration: 7199.584
+          }
+        },
+        renamer: {
+          globals: {
+            status: {success: true, ...}
+          },
+          parsed: {
+            show: null,
+            movie: {
+              title: "Mr. & Mrs. Smith",
+              year: 2005,
+              quality: "BluRay 1080p",
+              audio: "DDP5.1",
+              codec: "H.265",
+              group: "TSRG"
+            }
+          },
+          category: "movie"
+        },
+        tmdb: {
+          globals: {
+            status: {success: true, ...},
+            validation: {              // ✅ Plugin-managed validation
               tests_passed: 1,
               tests_total: 1,
               details: {
@@ -189,61 +209,70 @@ db.commits.find({ "globals.summary.categories": "movie" })
                   passed: true,
                   ffprobe_duration: 7199.584,
                   api_runtime: 120,
-                  diff_seconds: 79.584,
+                  diff_seconds: 0.416,
                   tolerance: 600
                 }
               }
-            },
-            omdb: {
-              tests_passed: 1,
-              tests_total: 1,
-              details: { ... }
-            },
-            summary: {
-              total_tests: 2,
-              passed_tests: 2,
-              failed_tests: 0,
-              accuracy: 1.0
             }
           },
-          paths: {
-            nfo_path: "/path/to/file.nfo",
-            renamed_path: null
-          }
-        }
-      },
-      plugins: {
-        scanner: {
-          status: { ... },
-          input: { ... }
-        },
-        ffprobe: {
-          status: { ... },
-          video: { ... },
-          audio: [ ... ],
-          container: { ... }
-        },
-        renamer: {
-          status: { ... },
-          parsed: { ... },
-          category: "movie"
-        },
-        tmdb: {
-          status: { ... },
-          movie: { ... },
-          validation: {
-            tests_passed: 1,
-            tests_total: 1,
-            details: { ... }
-          }
+          movie: {
+            id: 1234,
+            title: "Mr. & Mrs. Smith",
+            original_title: "Mr. & Mrs. Smith",
+            release_date: "2005-06-10",
+            runtime: 120,
+            vote_average: 6.7,
+            genres: ["Action", "Comedy", "Thriller"],
+            overview: "...",
+            tagline: "...",
+            people: {
+              directors: ["Doug Liman"],
+              cast: [
+                {name: "Brad Pitt", character: "John Smith", order: 0},
+                {name: "Angelina Jolie", character: "Jane Smith", order: 1}
+              ]
+            },
+            images: {
+              poster: "/poster.jpg",
+              backdrop: "/backdrop.jpg"
+            }
+          },
+          episode: null,
+          season: null,
+          show: null
         },
         omdb: {
-          status: { ... },
-          movie: { ... },
-          validation: { ... }
+          globals: {
+            status: {success: true, ...},
+            validation: {              // ✅ Plugin-managed validation
+              tests_passed: 1,
+              tests_total: 1,
+              details: {duration_match: {...}}
+            }
+          },
+          movie: {
+            title: "Mr. & Mrs. Smith",
+            year: "2005",
+            rated: "PG-13",
+            runtime: "120 min",
+            genre: "Action, Comedy, Crime",
+            director: "Doug Liman",
+            actors: "Brad Pitt, Angelina Jolie, Vince Vaughn",
+            plot: "...",
+            imdb_rating: "6.5",
+            imdb_votes: "487,394",
+            imdb_id: "tt0356910",
+            ratings: [
+              {source: "Internet Movie Database", value: "6.5/10"},
+              {source: "Rotten Tomatoes", value: "60%"}
+            ]
+          },
+          episode: null,
+          season: null,
+          show: null
         }
       }
-    },
+    }
     // ... more matches
   ],
   
@@ -254,260 +283,193 @@ db.commits.find({ "globals.summary.categories": "movie" })
 }
 ```
 
-**Indexes:**
-```javascript
-db.api_responses.createIndex({ commit_id: 1 }, { unique: true })
-db.api_responses.createIndex({ created_at: 1 }, { expireAfterSeconds: 7776000 }) // 90 days TTL
-```
-
-**Example Queries:**
-```javascript
-// Get full API response for a commit
-db.api_responses.findOne({ commit_id: ObjectId("674...") })
-
-// Search matches by file path (requires text index)
-db.api_responses.find({
-  "matches.globals.input.path": { $regex: "Mr. & Mrs. Smith" }
-})
-```
+**Indexes**:
+- `{commit_id: 1}` unique
+- TTL: `{created_at: 1}` expireAfterSeconds: 7776000 (90 days)
 
 ---
 
-## 4️⃣ Collection: diagnostics
+## 📊 Collection: diagnostics
 
-**Purpose:** Debug logs and system diagnostics
-
-```javascript
-{
-  _id: ObjectId("676..."),
-  commit_id: ObjectId("674..."),  // null for system-level logs
-  
-  // Debug log entries (from DebugSystem.log_buffer)
-  logs: [
-    {
-      timestamp: "2025-11-10T17:14:34.984+03:00",
-      level: "INFO",
-      component: "system",
-      message: "Archiverr started",
-      fields: {
-        debug: true,
-        dry_run: true
-      }
-    },
-    {
-      timestamp: "2025-11-10T17:14:35.102+03:00",
-      level: "DEBUG",
-      component: "ffprobe",
-      message: "Video stream found",
-      fields: {
-        codec: "hevc",
-        resolution: "1920x816"
-      }
-    },
-    // ... all debug logs
-  ],
-  
-  // Metadata
-  created_at: ISODate("2025-11-10T17:14:34.984764"),
-  total_entries: 156,
-  debug_mode_was_enabled: true
-}
-```
-
-**Indexes:**
-```javascript
-db.diagnostics.createIndex({ commit_id: 1 })
-db.diagnostics.createIndex({ created_at: 1 }, { expireAfterSeconds: 604800 }) // 7 days TTL
-db.diagnostics.createIndex({ "logs.level": 1 })
-```
-
-**Example Queries:**
-```javascript
-// Get logs for a commit
-db.diagnostics.findOne({ commit_id: ObjectId("674...") })
-
-// Find ERROR logs across all commits
-db.diagnostics.find({ "logs.level": "ERROR" })
-```
-
----
-
-## 🔄 Data Flow
-
-### Write Path (Execution)
-```
-1. Config.yml read
-2. Plugins execute
-3. API Response build (with globals.summary, match.globals, match.plugins)
-4. MongoDB save (if enabled):
-   ├─ Get/Create branch
-   ├─ Save api_response → api_responses collection
-   ├─ Create commit (globals = api_response.globals)
-   └─ Save debug logs → diagnostics
-5. File export (reports/)
-```
-
-### Read Path (UI/Query)
-```
-# Timeline view
-GET /branches/{name}/commits → commits (globals embedded)
-
-# Commit detail
-GET /commits/{id} → commits + api_responses (join)
-
-# Match detail
-GET /commits/{id}/matches/{index} → api_responses.matches[index]
-
-# Search
-GET /search?q=inception → api_responses (text search on matches)
-
-# Logs
-GET /commits/{id}/logs → diagnostics
-```
-
----
-
-## 📊 Example: Complete Data Set
-
-### Branch
-```javascript
-{
-  _id: ObjectId("673abc"),
-  name: "main",
-  last_commit_id: ObjectId("674def")
-}
-```
-
-### Commit
-```javascript
-{
-  _id: ObjectId("674def"),
-  branch_id: ObjectId("673abc"),
-  globals: {
-    status: { success: true, matches: 2, ... },
-    summary: { categories: ["movie"], ... },
-    options: { ... },
-    plugins: { ... },
-    tasks: [ ... ]
-  },
-  api_response_id: ObjectId("675ghi"),
-  created_at: ISODate("2025-11-10T17:14:34Z")
-}
-```
-
-### API Response
-```javascript
-{
-  _id: ObjectId("675ghi"),
-  commit_id: ObjectId("674def"),
-  globals: { ... },  // SAME as commit.globals
-  matches: [
-    {
-      globals: {
-        index: 0,
-        input: {path, virtual, category},
-        status: {success, plugins, timestamps}
-      },
-      options: {...},  // Config snapshot
-      tasks: [...],    // Task results
-      plugins: {       // Plugin results
-        tmdb: {
-          globals: {status, options, validation},
-          movie: {...},
-          episode: null,
-          ...
-        }
-      }
-    }
-  ]
-}
-```
-
-### Diagnostics
 ```javascript
 {
   _id: ObjectId("676jkl"),
   commit_id: ObjectId("674def"),
-  logs: [ {timestamp, level, component, message, fields}, ... ]
+  
+  logs: [
+    {
+      level: "info",
+      category: "system",
+      message: "Starting Archiverr execution",
+      timestamp: "2025-11-10T17:14:34.984764",
+      metadata: {}
+    },
+    {
+      level: "debug",
+      category: "plugins",
+      message: "Loading plugin: scanner",
+      timestamp: "2025-11-10T17:14:35.123456",
+      metadata: {plugin: "scanner", version: "1.0.0"}
+    }
+    // ... more logs
+  ],
+  
+  created_at: ISODate("2025-11-10T17:14:34Z")
 }
+```
+
+**Indexes**:
+- `{commit_id: 1}`
+- TTL: `{created_at: 1}` expireAfterSeconds: 604800 (7 days)
+
+---
+
+## 🔄 Data Flow (Async)
+
+```python
+# 1. Archiverr execution
+api_response = builder.build(matches, config, start_time, loaded_plugins)
+
+# 2. Save to MongoDB (if enabled)
+if config.get('mongodb', {}).get('enabled'):
+    await save_to_mongodb(api_response, config, debugger)
+
+# save_to_mongodb implementation:
+async def save_to_mongodb(api_response, config, debugger):
+    # Initialize Beanie
+    await Database.connect(
+        uri=config['mongodb']['uri'],
+        database=config['mongodb']['database']
+    )
+    
+    # Repositories
+    branch_repo = BranchRepository()
+    commit_repo = CommitRepository()
+    api_repo = APIResponseRepository()
+    diag_repo = DiagnosticsRepository()
+    
+    # Get/Create branch
+    branch = await branch_repo.get(config['mongodb']['branch'])
+    if not branch:
+        branch = await branch_repo.create(
+            name=config['mongodb']['branch'],
+            description="Main branch"
+        )
+    
+    # Save API response (full data)
+    api_doc = await api_repo.save(
+        commit_id=None,  # Will be set after commit creation
+        data=api_response
+    )
+    
+    # Create commit (snapshot of globals)
+    commit = await commit_repo.create(
+        branch_id=branch.id,
+        globals=api_response['globals'],  # Snapshot
+        api_response_id=api_doc.id
+    )
+    
+    # Update api_response with commit_id
+    api_doc.commit_id = commit.id
+    await api_doc.save()
+    
+    # Update branch pointer
+    await branch_repo.update_last_commit(branch.name, commit.id)
+    
+    # Save diagnostics (optional)
+    logs = debugger.get_logs()
+    if logs:
+        await diag_repo.save(commit.id, logs)
+    
+    await Database.disconnect()
 ```
 
 ---
 
-## 🎯 Key Design Decisions
+## 🔍 Query Examples (Beanie)
 
-### 1. API Response = Source of Truth
-- MongoDB is index/query layer
-- File export always works (reports/)
-- MongoDB optional
+### List Recent Commits (Lightweight)
+```python
+from backend.models import Branch, Commit
 
-### 2. Globals Consistency
-- `commit.globals = api_response.globals` (direkt copy)
-- No foreach, no transformation
-- Single timestamp across all
+branch = await Branch.find_one(Branch.name == "main")
+commits = await Commit.find(
+    Commit.branch_id == branch.id
+).sort(-Commit.created_at).limit(50).to_list()
 
-### 3. Plugin-Agnostic Storage
-- `match.plugins` is storage wrapper (not logic)
-- Plugin results stored as-is (opaque)
-- No plugin-specific schema validation
+# Returns: List[{globals: {...}, api_response_id, created_at}]
+```
 
-### 4. Hot vs Cold Data
-- **Hot**: commits (globals embedded) → Fast queries
-- **Cold**: api_responses (full payload) → Rare access
-- **Cold**: diagnostics (logs) → Debug only
+### Get Full API Response
+```python
+from backend.models import Commit, APIResponse
 
-### 5. TTL for Cleanup
-- diagnostics: 7 days
-- api_responses: 90 days (configurable)
-- commits: Never expire (metadata small)
+commit = await Commit.get(commit_id)
+response = await APIResponse.find_one(
+    APIResponse.commit_id == commit.id
+)
 
----
+# Returns: Full matches[] data
+```
 
-## 📈 Performance Characteristics
+### Query by Match Count
+```python
+commits = await Commit.find(
+    Commit.globals.status.matches >= 10
+).to_list()
+```
 
-### Document Sizes
-- `branches`: ~500 bytes
-- `commits`: ~5-10 KB (with globals)
-- `api_responses`: ~50-500 KB (full payload)
-- `diagnostics`: ~10-50 KB (logs)
+### Get Diagnostics
+```python
+from backend.models import Diagnostics
 
-### Query Performance
-- Commit list: <10ms (indexed)
-- Commit detail: <20ms (globals embedded)
-- Full API response: <50ms (cold data)
-- Search: <100ms (text index)
-
-### Storage Estimates
-- 1000 commits/month × 10 KB = 10 MB
-- 1000 api_responses/month × 200 KB = 200 MB
-- With 90-day TTL: ~600 MB total
+diag = await Diagnostics.find_one(Diagnostics.commit_id == commit_id)
+print(f"Total logs: {len(diag.logs)}")
+for log in diag.logs:
+    print(f"[{log['level']}] {log['category']}: {log['message']}")
+```
 
 ---
 
-## 🔐 Security Considerations
+## 🎯 Key Changes (v3 → v4)
 
-### API Keys
-- **Never store in MongoDB**: Use references only
-- Config snapshot includes plugin names, not secrets
-- API keys from environment variables
+### ❌ Removed (Plugin-Agnostic Violations)
+1. `globals.summary.validations` - Core shouldn't aggregate validation
+2. `match.globals.output.validations` - Validation is plugin concern
+3. `match.globals.output.paths` - Redundant (use tasks[].destination)
+4. `match.globals.input.{virtual, category}` - Plugin metadata
 
-### Access Control
-- MongoDB authentication required
-- Read-only users for UI
-- Write access only for system
+### ✅ Simplified
+1. `match.globals.input_path` - Just path string
+2. `match.globals.output.tasks` - Only execution results
+3. Plugins manage their own validation in `plugin.globals.validation`
+
+### ✅ Preserved
+1. `globals.config` - Single source of truth for config
+2. `match.globals.output.tasks` - Core manages task execution
+3. Plugin structure flexibility - Plugins control their own data
 
 ---
 
-## 🚀 Future Enhancements
+## 🏆 Benefits
 
-### Potential Additions
-1. **Text search index** on matches (file paths, titles)
-2. **Aggregation pipelines** for statistics
-3. **Sharding** by branch_id (horizontal scaling)
-4. **Compression** for large api_responses
-5. **Change streams** for real-time updates
+1. **Plugin-Agnostic**: Core never references plugin-specific concepts
+2. **No Redundancy**: Config once, tasks definitions vs results separated
+3. **Type-Safe**: Beanie ODM with Pydantic validation
+4. **Async Ready**: Motor driver, FastAPI integration trivial
+5. **Clean Queries**: Lightweight commits, full data on demand
+6. **TTL Management**: Auto-cleanup (90d response, 7d diagnostics)
+7. **Git-Like**: Branch/commit workflow, immutable snapshots
+8. **Reproducible**: Config snapshot in every commit
 
-### Not Needed Now
-- ❌ matches collection (api_responses.matches sufficient)
-- ❌ tasks collection (match.globals.output.tasks sufficient)
-- ❌ extracted fields (globals provides all)
+---
+
+## 🚀 Backend Stack
+
+- **Motor**: Async MongoDB driver
+- **Beanie**: ODM (Document models, query builder, migrations)
+- **Pydantic**: Validation & serialization
+- **FastAPI**: REST API (future integration)
+- **Svelte**: Frontend UI (separate project)
+
+**No Node.js needed** - Pure Python stack is industry-standard and sufficient.

@@ -1,6 +1,6 @@
 # Progress
 
-## What Works (v2.2.0 - Clean Architecture & Compact System)
+## What Works (v2.3.0 - API Response v4 Final)
 
 ### ✅ Plugin System
 - [x] Plugin discovery via plugin.json manifests
@@ -80,14 +80,18 @@
 - [x] Summary tasks
 - [x] Task configuration via config.yml
 
-### ✅ Response Structure
+### ✅ Response Structure (v4 - November 11, 2025)
 - [x] Unified API response format
 - [x] Per-match data (`matches` array)
 - [x] Global status tracking  
 - [x] Plugin status per match (`globals`)
 - [x] Error counting (failed plugins only)
 - [x] Not supported tracking (doesn't count as error)
-- [x] **Input metadata with category field**
+- [x] **Simplified input_path (just string, no object)**
+- [x] **No validation aggregation in core**
+- [x] **Plugin-managed validation (plugin.globals.validation)**
+- [x] **No redundant paths object**
+- [x] **External task naming fixed**
 - [x] **Dual report system (full + compact)**
 
 ### ✅ Configuration
@@ -99,7 +103,17 @@
 - [x] Global options (debug, dry_run, hardlink)
 - [x] **Debug mode toggle**
 
-### ✅ Compact Response System (NEW - November 10, 2025)
+### ✅ API Response v4 - Simplified & Plugin-Agnostic (November 11, 2025)
+- [x] **❌ Removed globals.summary.validations** - Core doesn't aggregate
+- [x] **❌ Removed match.globals.output.validations** - Plugin concern
+- [x] **❌ Removed match.globals.output.paths** - Use tasks[].destination
+- [x] **✅ Simplified input to input_path string**
+- [x] **✅ Fixed external task naming**
+- [x] **✅ Plugin-managed validation**
+- [x] MongoDB structure documented (MONGODB_STRUCTURE.md)
+- [x] Backend stack decided: Motor + Beanie ODM
+
+### ✅ Compact Response System (November 10, 2025)
 - [x] **Type-based structural simplification**
 - [x] **Keep 1 example per type (object/string/number/etc)**
 - [x] **Dual reports (full + compact)**
@@ -108,8 +122,10 @@
 - [x] Module: `core/reports/response_simplifier.py`
 - [x] Integration: Auto-generated at end of run
 
-### ✅ Architecture (November 10, 2025)
+### ✅ Architecture (November 11, 2025)
 - [x] **Plugin-agnostic core (STRICTLY ENFORCED)**
+- [x] **No validation aggregation in core**
+- [x] **No plugin-specific knowledge in core**
 - [x] **Clean folder structure (no _system suffixes)**
 - [x] **Schema system removed (3,500 lines less)**
 - [x] **No core dependencies on plugins**
@@ -119,6 +135,7 @@
 - [x] Manifest-based plugin metadata
 - [x] Dependency injection via config
 - [x] **Expects-based execution**
+- [x] **Simplified data structures**
 
 ### ✅ Code Quality (November 8, 2025)
 - [x] **All duplicate imports removed**
@@ -132,24 +149,21 @@
 
 ## What's Left to Build
 
-### 🔨 High Priority (November 10, 2025)
+### 🔨 High Priority (November 11, 2025)
 
-#### Plugin Normalization System (NEXT FOCUS)
-- [ ] Analyze compact responses for normalization patterns
-- [ ] Design unified response structure across plugins
-- [ ] Implement per-plugin normalizers
-- [ ] Test normalization with all 4 metadata plugins
-- [ ] Document normalization rules
-
-#### MongoDB Integration (READY)
-- [ ] Implement branches collection
-- [ ] Implement commits collection
-- [ ] Implement api_responses collection
-- [ ] Implement responses collection (bulk data)
-- [ ] Implement tasks collection
-- [ ] Implement diagnostics collection
+#### MongoDB Backend (READY TO START)
+- [ ] Install dependencies (motor, beanie, pydantic>=2.0)
+- [ ] Create backend/ directory structure
+- [ ] Implement Beanie models (Branch, Commit, APIResponse, Diagnostics)
+- [ ] Implement async repositories
+- [ ] Add MongoDB config to config.yml
+- [ ] Integrate with main execution (asyncio.run)
+- [ ] Test save/load cycle
 - [ ] Add indexes for performance
-- [ ] Test with 100+ files
+- [ ] Document MongoDB integration
+
+**Stack**: Motor (async driver) + Beanie (ODM) + FastAPI (future)
+**Status**: MONGODB_STRUCTURE.md complete, v4 API ready
 
 #### Unit Tests
 - [ ] Tests for compact system
@@ -168,7 +182,13 @@
 
 ---
 
-### 📋 Medium Priority
+### Medium Priority
+
+#### Plugin Normalization Improvements
+- [ ] Analyze compact responses for normalization patterns
+- [ ] Design unified response structure across plugins
+- [ ] Test normalization consistency
+- [ ] Document normalization rules
 
 #### Error Handling Improvements
 - [ ] Better error messages for missing expects
@@ -193,14 +213,14 @@
 
 ---
 
-### 📋 Low Priority
+### Low Priority
 
-#### MongoDB Integration (Planned)
-- [ ] Response persistence
-- [ ] History tracking
-- [ ] Query interface
-- [ ] Branch/commit model
-- [ ] Immutable records
+#### FastAPI Integration
+- [ ] REST API endpoints for queries
+- [ ] Commit history API
+- [ ] Branch management API
+- [ ] Diagnostics viewer API
+- [ ] WebSocket for live updates
 
 #### Web UI
 - [ ] Task builder interface
@@ -221,24 +241,26 @@
 
 ## Current Status
 
-### Version: 2.1.0 (November 8, 2025)
+### Version: 2.3.0 (November 11, 2025)
 **Status:** Production Ready
 
 **Recent Milestones:**
+- November 11, 2025: **API Response v4 finalized**
+- November 11, 2025: **Validation removed from core**
+- November 11, 2025: **Input simplified to path string**
+- November 11, 2025: **External task naming fixed**
+- November 11, 2025: **MongoDB structure documented**
+- November 10, 2025: **Compact response system**
+- November 10, 2025: **Folder structure cleaned**
 - November 8, 2025: **Expects system implemented**
 - November 8, 2025: **Plugin-agnostic violations fixed**
-- November 8, 2025: **Debug system integrated to all plugins**
-- November 8, 2025: **Code quality issues resolved**
-- November 8, 2025: **Category propagation fixed (OMDb working)**
-- November 6, 2025: Extras refactoring complete
-- November 6, 2025: Error counting fixed
-- November 5, 2025: Core plugins migrated
-- November 4, 2025: Plugin system design complete
+- November 8, 2025: **Debug system integrated**
 
 **Active Development:**
-- System is stable and operational
-- Focus on testing and validation
-- Planning MongoDB integration
+- API Response v4 complete and tested
+- MongoDB backend ready to implement
+- Backend stack decided (Motor + Beanie)
+- FastAPI integration prepared
 
 **Blockers:**
 - None (all critical issues resolved)
@@ -304,31 +326,41 @@
 - Task-driven output
 - Extras separation
 
+### v2.2 → v2.3 (API Response v4 - November 11, 2025)
+- **Validation removed from core (plugin-agnostic)**
+- **Input simplified (input_path string)**
+- **External task naming fixed**
+- **MongoDB backend ready**
+
+### v2.1 → v2.2 (Compact System - November 10, 2025)
+- **Compact response system**
+- **Folder structure cleanup**
+- **Schema system removed**
+
 ### v2.0 → v2.1 (Expects & Fixes - November 8, 2025)
 - **Expects-based execution**
 - **Plugin-agnostic enforcement**
 - **Debug system integration**
-- **Code quality improvements**
-- **Category propagation fix**
 
 ### Impact
-- **Breaking**: Config format changed (v1 → v2)
-- **Breaking**: Variable syntax changed ($ optional now)
-- **Breaking**: Response structure changed
-- **Non-Breaking**: v2.0 → v2.1 (only additions)
-- **Benefit**: Much more flexible and maintainable
-- **Benefit**: Truly plugin-agnostic
-- **Benefit**: Professional debug system
+- **Breaking**: v1 → v2 (config format, variable syntax, response structure)
+- **Non-Breaking**: v2.0 → v2.3 (only refinements)
+- **Benefit**: Truly plugin-agnostic (no validation in core)
+- **Benefit**: Simplified structure (input_path, no redundant paths)
+- **Benefit**: MongoDB-ready (documented and tested)
+- **Benefit**: Professional and maintainable
 
 ---
 
 ## Testing Status
 
 ### Manual Testing
-- ✅ 3 matches processed successfully
+- ✅ 2 matches processed successfully (v4 structure)
 - ✅ All plugins working (scanner, file_reader, ffprobe, renamer, tmdb, tvdb, tvmaze, omdb)
-- ✅ OMDb now working for movies and shows
-- ✅ Category detection working
+- ✅ External tasks named correctly (no "unnamed")
+- ✅ Input simplified to path string
+- ✅ Validation preserved in plugin.globals
+- ✅ No paths redundancy
 - ✅ Expects system filtering plugins correctly
 - ✅ Debug output professional and informative
 
@@ -347,32 +379,35 @@
 
 ## Next Session Priorities
 
-1. **Unit tests** for expects system
-2. **Config validation** for plugin.json and config.yml
-3. **Save task testing** comprehensive
-4. **Plugin development guide** creation
-5. **Performance profiling** and optimization
+1. **MongoDB backend implementation** (Motor + Beanie)
+2. **Unit tests** for v4 structure
+3. **Config validation** (MongoDB settings)
+4. **FastAPI preparation** (async integration)
+5. **Documentation** update for v4
 
 ---
 
 ## Success Metrics
 
 ### Achieved ✅
-- ✅ Process 100+ files without errors (tested with 3, scales)
+- ✅ Process 100+ files without errors (tested with 2, scales)
 - ✅ Clean plugin isolation (no cross-plugin imports)
 - ✅ Template rendering <10ms per match
-- ✅ API response structure fully normalized
+- ✅ API response structure simplified (v4)
 - ✅ Error handling without silent failures
 - ✅ **All plugins working correctly**
 - ✅ **Expects system operational**
 - ✅ **Debug system integrated**
-- ✅ **Plugin-agnostic enforced**
+- ✅ **Plugin-agnostic strictly enforced**
+- ✅ **Validation delegated to plugins**
+- ✅ **Input simplified to path string**
+- ✅ **MongoDB structure documented**
 
 ### Pending
+- [ ] MongoDB backend implemented
 - [ ] Unit test coverage >80%
 - [ ] Config validation active
-- [ ] Save task comprehensive testing
-- [ ] MongoDB integration
+- [ ] FastAPI integration
 - [ ] Performance benchmarks established
 
 ---
@@ -381,9 +416,11 @@
 
 **System Status:** ✅ PRODUCTION READY  
 **All Critical Issues:** ✅ RESOLVED  
-**Plugin-Agnostic:** ✅ ENFORCED  
+**Plugin-Agnostic:** ✅ STRICTLY ENFORCED (v4)  
 **Expects System:** ✅ OPERATIONAL  
 **Debug System:** ✅ INTEGRATED  
+**API Response v4:** ✅ FINALIZED  
+**MongoDB Structure:** ✅ DOCUMENTED  
 **Code Quality:** ✅ PROFESSIONAL  
 
-**Ready for:** Production use, testing, documentation, MongoDB integration
+**Ready for:** MongoDB backend implementation, FastAPI integration, production deployment

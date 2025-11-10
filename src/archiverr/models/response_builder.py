@@ -72,12 +72,8 @@ class APIResponseBuilder:
         end_time = now
         duration_ms = int((end_time - start_time).total_seconds() * 1000)
         
-        # Build summary with validations
+        # Build summary (no validations - that's plugin-specific)
         summary = self._build_summary(processed_matches, total_size_bytes, total_duration_seconds)
-        
-        # Add validation summary to globals.summary
-        validation_summary = self._build_global_validations_summary(processed_matches)
-        summary['validations'] = validation_summary
         
         globals_data = {
             'status': {
@@ -92,11 +88,13 @@ class APIResponseBuilder:
             'summary': summary
         }
         
-        # Add config snapshot if provided
+        # Add config snapshot if provided (wrapped in 'config')
         if config:
-            globals_data['options'] = config.get('options', {})
-            globals_data['plugins'] = config.get('plugins', {})
-            globals_data['tasks'] = config.get('tasks', [])
+            globals_data['config'] = {
+                'options': config.get('options', {}),
+                'plugins': config.get('plugins', {}),
+                'tasks': config.get('tasks', [])
+            }
         
         self.debugger.info("response_builder", "API response built", 
                           matches=len(matches), errors=total_errors, 
@@ -109,12 +107,13 @@ class APIResponseBuilder:
     
     def _format_match(self, match: Dict[str, Any], index: int, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Format a single match with new structure:
-        - match.globals (index, input, status)
-        - match.options (config snapshot for this match)
-        - match.tasks (root level, will be filled later)
-        - match.plugins.{plugin}.globals (status, options)
+        Format a single match with corrected structure:
+        - match.globals.index, input, status
+        - match.globals.output (tasks, validations, paths) - to be filled later
+        - match.plugins.{plugin}.globals (status, validation only)
         - match.plugins.{plugin}.{data} (plugin's own structure)
+        
+        Note: NO match.options (duplicate), NO plugin.globals.options
         """
         # Extract components
         input_metadata = match.get('input', {'path': '', 'virtual': False})
@@ -137,15 +136,9 @@ class APIResponseBuilder:
             plugin_status = plugin_data.get('status', {})
             plugin_validation = plugin_data.get('validation', {})
             
-            # Get plugin-specific options from config
-            plugin_options = {}
-            if config:
-                plugin_options = config.get('plugins', {}).get(plugin_name, {})
-            
-            # Build plugin.globals
+            # Build plugin.globals (status + validation only, NO options)
             plugin_globals = {
-                'status': plugin_status,
-                'options': plugin_options
+                'status': plugin_status
             }
             if plugin_validation:
                 plugin_globals['validation'] = plugin_validation
@@ -160,96 +153,22 @@ class APIResponseBuilder:
             
             formatted_plugins[plugin_name] = formatted_plugin
         
-        # Build match globals (no output anymore)
+        # Build match globals with simplified structure
+        # input_path: Just the path string (simplified)
+        input_path = input_metadata.get('path', '') if isinstance(input_metadata, dict) else input_metadata
+        
         match_globals = {
             'index': index,
-            'input': input_metadata,
-            'status': match_status
+            'input_path': input_path,
+            'status': match_status,
+            'output': {
+                'tasks': []  # ONLY tasks (execution results)
+            }
         }
-        
-        # Match-level options (config snapshot)
-        match_options = config.get('options', {}) if config else {}
         
         return {
             'globals': match_globals,
-            'options': match_options,
-            'tasks': [],  # Will be filled later by task manager
             'plugins': formatted_plugins
-        }
-    
-    def _build_validations_summary(self, plugins: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Build validation summary from all plugins.
-        Returns: {plugin_name: validation, summary: {...}}
-        """
-        validations = {}
-        total_tests = 0
-        passed_tests = 0
-        
-        for plugin_name, plugin_data in plugins.items():
-            if isinstance(plugin_data, dict):
-                plugin_globals = plugin_data.get('globals', {})
-                validation = plugin_globals.get('validation', {})
-                
-                if validation:
-                    validations[plugin_name] = validation
-                    total_tests += validation.get('tests_total', 0)
-                    passed_tests += validation.get('tests_passed', 0)
-        
-        # Build summary
-        validation_summary = {
-            'total_tests': total_tests,
-            'passed_tests': passed_tests,
-            'failed_tests': total_tests - passed_tests,
-            'accuracy': round(passed_tests / total_tests, 2) if total_tests > 0 else 0.0
-        }
-        
-        validations['summary'] = validation_summary
-        return validations
-    
-    def _build_global_validations_summary(self, processed_matches: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Build global validation summary across all matches.
-        Returns: {total_tests, passed_tests, failed_tests, accuracy, by_plugin: {...}}
-        """
-        total_tests = 0
-        passed_tests = 0
-        by_plugin = {}
-        
-        for match in processed_matches:
-            plugins = match.get('plugins', {})
-            
-            for plugin_name, plugin_data in plugins.items():
-                if isinstance(plugin_data, dict):
-                    plugin_globals = plugin_data.get('globals', {})
-                    validation = plugin_globals.get('validation', {})
-                    
-                    if validation and validation.get('tests_total', 0) > 0:
-                        # Track per-plugin totals
-                        if plugin_name not in by_plugin:
-                            by_plugin[plugin_name] = {
-                                'total_tests': 0,
-                                'passed_tests': 0
-                            }
-                        
-                        by_plugin[plugin_name]['total_tests'] += validation.get('tests_total', 0)
-                        by_plugin[plugin_name]['passed_tests'] += validation.get('tests_passed', 0)
-                        
-                        # Track global totals
-                        total_tests += validation.get('tests_total', 0)
-                        passed_tests += validation.get('tests_passed', 0)
-        
-        # Calculate accuracy per plugin
-        for plugin_name, stats in by_plugin.items():
-            stats['failed_tests'] = stats['total_tests'] - stats['passed_tests']
-            stats['accuracy'] = round(stats['passed_tests'] / stats['total_tests'], 2) if stats['total_tests'] > 0 else 0.0
-        
-        return {
-            'total_tests': total_tests,
-            'passed_tests': passed_tests,
-            'failed_tests': total_tests - passed_tests,
-            'accuracy': round(passed_tests / total_tests, 2) if total_tests > 0 else 0.0,
-            'by_plugin': by_plugin
         }
     
     def _build_summary(
