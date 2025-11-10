@@ -157,13 +157,12 @@ def main():
         loaded_plugins=all_plugins
     )
     
-    # Phase 6.1: Add task results to match.globals.output.tasks
+    # Phase 6.1: Add task results to match.tasks (flat structure)
     for match_index, task_results_list in match_task_results.items():
         if match_index < len(api_response['matches']):
             match = api_response['matches'][match_index]
-            match_output = match.get('globals', {}).get('output', {})
             
-            # Format task results for storage
+            # Format task results for flat storage
             formatted_tasks = []
             
             for task_result in task_results_list:
@@ -181,11 +180,11 @@ def main():
                 
                 formatted_tasks.append(task_entry)
             
-            # Update match.globals.output.tasks (NO paths - redundant)
-            match_output['tasks'] = formatted_tasks
+            # Update match.tasks (flat, no nesting)
+            match['tasks'] = formatted_tasks
     
-    # Update globals with task count
-    api_response['globals']['status']['tasks'] = len(all_task_results)
+    # Update summary with task count
+    api_response['summary']['total_tasks_executed'] = len(all_task_results)
     
     # Phase 7: Generate dual reports (full + compact + debug log)
     debugger.debug("system", "Generating API response reports")
@@ -199,9 +198,9 @@ def main():
                   debug_log=report_paths.get('debug_log', 'N/A'))
     
     debugger.info("system", "Archiverr complete", 
-                 matches=len(processed_matches),
-                 tasks=len(all_task_results),
-                 errors=api_response['globals']['status']['errors'])
+                 matches=api_response['summary']['total_matches'],
+                 tasks=api_response['summary']['total_tasks_executed'],
+                 errors=api_response['summary']['failed_matches'])
 
 
 if __name__ == "__main__":

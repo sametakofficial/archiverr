@@ -131,16 +131,15 @@ class TaskManager:
         
         destination = self.template_manager.render(destination_template, api_response, current_index)
         
-        # Get source file from match.globals.input (generic pattern)
+        # Get source file from match.input_path (flat structure)
         matches = api_response.get('matches', [])
         if current_index >= len(matches):
             return None
         
         current_match = matches[current_index]
         
-        # Use generic input_path from match.globals (plugin-agnostic)
-        match_globals = current_match.get('globals', {})
-        source = match_globals.get('input_path', '')
+        # Use input_path directly from match (flat, plugin-agnostic)
+        source = current_match.get('input_path', '')
         
         if not source or not destination:
             return None

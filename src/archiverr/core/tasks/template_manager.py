@@ -25,21 +25,21 @@ class TemplateManager:
         """
         Render template with context data.
         
-        NEW Variable resolution (v2):
-        - $tmdb.movie.title → match.plugins.tmdb.movie.title
-        - $tmdb.globals.status → match.plugins.tmdb.globals.status
-        - $globals.status → match.globals.status
-        - $options.debug → match.options.debug
+        NEW Variable resolution (v3 - Flat):
+        - $tmdb.movie.title → match.tmdb.movie.title (direct access)
+        - $tmdb.status → match.tmdb.status (status in plugin root)
+        - $input_path → match.input_path
+        - $success → match.success
         - $tasks → match.tasks
-        - $apiresponse.globals.summary → API root globals
-        - $100.tmdb.movie → matches[100].plugins.tmdb.movie
+        - $execution.duration_ms → API root execution
+        - $summary.total_matches → API root summary
+        - $100.tmdb.movie → matches[100].tmdb.movie
         
-        Smart routing:
-        - Plugin name (tmdb, omdb, etc.) → match.plugins[plugin_name]
-        - 'globals' → match.globals
-        - 'options' → match.options
-        - 'tasks' → match.tasks
-        - 'apiresponse' → API root
+        Flat routing:
+        - Plugin name (tmdb, omdb, etc.) → match[plugin_name] (direct)
+        - 'execution' → API root execution
+        - 'summary' → API root summary
+        - 'config' → API root config
         
         Args:
             template: Jinja2 template string
@@ -49,7 +49,7 @@ class TemplateManager:
         Returns:
             Rendered string
         """
-        # Build template context
+        # Build template context for flat structure
         matches = context.get('matches', [])
         
         if current_index >= len(matches):
@@ -57,31 +57,33 @@ class TemplateManager:
         
         current_match = matches[current_index]
         
-        # Create Jinja2 context
-        api_globals = context.get('globals', {})
-        match_globals = current_match.get('globals', {})
-        match_output = match_globals.get('output', {})
-        match_plugins = current_match.get('plugins', {})
-        
-        # Get options from api_response.globals.config
-        api_config = api_globals.get('config', {})
-        global_options = api_config.get('options', {})
-        
+        # Flat Jinja2 context - direct access to everything
         jinja_context = {
-            'apiresponse': context,  # Full API response
-            'globals': match_globals,  # Current match globals
-            'options': global_options,  # From api_response.globals.config.options
-            'output': match_output,  # match.globals.output (tasks, validations, paths)
+            # API root
+            'execution': context.get('execution', {}),
+            'summary': context.get('summary', {}),
+            'config': context.get('config', {}),
+            
+            # Match metadata (direct access)
             'index': current_index,
-            'total': len(matches),
-            'matches': matches  # For indexed access
+            'input_path': current_match.get('input_path', ''),
+            'success': current_match.get('success', True),
+            'executed_plugins': current_match.get('executed_plugins', []),
+            'failed_plugins': current_match.get('failed_plugins', []),
+            'duration_ms': current_match.get('duration_ms', 0),
+            'tasks': current_match.get('tasks', []),
+            
+            # All matches for indexed access
+            'matches': matches,
+            'total': len(matches)
         }
         
-        # Add all plugin data from current match (direct access)
-        # $tmdb.movie → will be routed to match.plugins.tmdb.movie
-        # $tmdb.globals → will be routed to match.plugins.tmdb.globals
-        for plugin_name, plugin_data in match_plugins.items():
-            jinja_context[plugin_name] = plugin_data
+        # Add all plugin data directly from match (flat access)
+        # $tmdb.movie → match['tmdb']['movie']
+        for key, value in current_match.items():
+            if key not in ['index', 'input_path', 'success', 'executed_plugins', 
+                          'failed_plugins', 'not_supported_plugins', 'duration_ms', 'tasks']:
+                jinja_context[key] = value
         
         try:
             # Process template functions first (index:$, count:)
@@ -207,14 +209,14 @@ class TemplateManager:
     
     def _process_dollar_syntax(self, template: str) -> str:
         """
-        Convert $ prefix to Jinja2 syntax with smart routing.
+        Convert $ prefix to Jinja2 syntax with flat routing.
         
-        Smart routing logic:
-        - $apiresponse.globals.summary → {{ apiresponse.globals.summary }}
-        - $globals.status → {{ globals.status }} (match globals)
-        - $tmdb.movie.title → {{ tmdb.movie.title }} (plugin data)
-        - $100.tmdb.movie → {{ matches[100].plugins.tmdb.movie }}
-        - $100.globals.status → {{ matches[100].globals.status }}
+        Flat routing logic (v3):
+        - $input_path → {{ input_path }}
+        - $tmdb.movie.title → {{ tmdb.movie.title }} (direct)
+        - $execution.duration_ms → {{ execution.duration_ms }}
+        - $summary.total_matches → {{ summary.total_matches }}
+        - $100.tmdb.movie → {{ matches[100].tmdb.movie }} (flat)
         
         Args:
             template: Template with $ syntax
@@ -230,33 +232,18 @@ class TemplateManager:
                 parts = var_path.split('.')
                 first = parts[0]
                 
-                # Indexed access: $100.tmdb.movie
+                # Indexed access: $100.tmdb.movie (flat)
                 if first.isdigit():
                     index = first
-                    second = parts[1] if len(parts) > 1 else ''
-                    remaining = '.'.join(parts[2:]) if len(parts) > 2 else ''
+                    remaining = '.'.join(parts[1:]) if len(parts) > 1 else ''
                     
-                    # Route based on second part
-                    if second == 'globals':
-                        # $100.globals.status → matches[100].globals.status
-                        path = f'matches[{index}].globals'
-                        if remaining:
-                            path += f'.{remaining}'
-                        return f'{{{{ {path} }}}}'
-                    else:
-                        # $100.tmdb.movie → matches[100].plugins.tmdb.movie
-                        path = f'matches[{index}].plugins.{second}'
-                        if remaining:
-                            path += f'.{remaining}'
-                        return f'{{{{ {path} }}}}'
-                
-                # Current match access: $tmdb.movie or $globals.status or $apiresponse.globals
-                # Already routed in jinja_context, just pass through
-                # - $globals → globals (match.globals)
-                # - $tmdb → tmdb (match.plugins.tmdb)
-                # - $apiresponse → apiresponse (full API response)
+                    # Flat access: matches[100].tmdb.movie
+                    path = f'matches[{index}]'
+                    if remaining:
+                        path += f'.{remaining}'
+                    return f'{{{{ {path} }}}}'
             
-            # Normal variable access (no routing needed, context already set up)
+            # Normal variable access (already in flat context)
             return f'{{{{ {var_path} }}}}'
         
         # Use pre-compiled pattern for performance

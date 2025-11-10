@@ -19,20 +19,28 @@ class APIResponseBuilder:
         loaded_plugins: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Build complete API response structure with new format.
+        Build professional API response with time-series database structure.
+        
+        Design Philosophy:
+        - Execution-centric: Each run is a timestamped execution record
+        - Flat structure: Minimal nesting for query performance
+        - Self-contained: All essential data in one document
+        - MongoDB-ready: Optimized for time-series queries
         
         Args:
             matches: List of processed matches with plugin results
-            config: Config snapshot (for globals.options/plugins/tasks)
+            config: Config snapshot (only enabled plugins)
             start_time: Execution start time
-            loaded_plugins: Loaded plugin manifests for categories
+            loaded_plugins: Loaded plugin manifests
             
         Returns:
-            Complete API response with:
-            - globals.summary (input_plugin, categories, etc.)
-            - globals.options/plugins/tasks (config snapshot)
-            - match.plugins wrapper
-            - match.globals.output (tasks, validations, paths)
+            Professional API response:
+            {
+                "execution": {metadata},
+                "summary": {aggregates},
+                "config_hash": "sha256",  # For deduplication
+                "matches": [{results}]
+            }
         """
         self.debugger.debug("response_builder", "Building API response", matches=len(matches))
         
@@ -44,132 +52,192 @@ class APIResponseBuilder:
         
         now = datetime.now()
         
-        # Build matches with new structure
+        # Process matches with flat structure
         processed_matches = []
         total_errors = 0
         total_size_bytes = 0
         total_duration_seconds = 0.0
+        total_tasks_executed = 0
         
         for index, match in enumerate(matches):
-            formatted_match = self._format_match(match, index, config)
+            formatted_match = self._format_match_flat(match, index)
             processed_matches.append(formatted_match)
             
-            # Count errors
-            match_status = formatted_match['globals']['status']
-            failed_count = len(match_status.get('failed_plugins', []))
-            if failed_count > 0:
+            # Aggregate statistics
+            if not formatted_match.get('success', True):
                 total_errors += 1
             
-            # Accumulate size and duration
-            ffprobe_data = formatted_match.get('plugins', {}).get('ffprobe', {})
-            if ffprobe_data and isinstance(ffprobe_data, dict):
+            # Size and duration from ffprobe
+            ffprobe_data = formatted_match.get('ffprobe', {})
+            if ffprobe_data:
                 container = ffprobe_data.get('container', {})
-                if container:
-                    total_size_bytes += container.get('size', 0)
-                    total_duration_seconds += container.get('duration', 0)
+                total_size_bytes += container.get('size', 0)
+                total_duration_seconds += container.get('duration', 0)
+            
+            # Count tasks
+            tasks = formatted_match.get('tasks', [])
+            total_tasks_executed += len(tasks)
         
-        # Build globals with summary, options, plugins, tasks
-        end_time = now
-        duration_ms = int((end_time - start_time).total_seconds() * 1000)
+        # Execution metadata (flat, query-optimized)
+        duration_ms = int((now - start_time).total_seconds() * 1000)
         
-        # Build summary (no validations - that's plugin-specific)
-        summary = self._build_summary(processed_matches, total_size_bytes, total_duration_seconds)
+        # Build minimal config snapshot (only enabled plugins)
+        config_snapshot = self._build_config_snapshot(config, loaded_plugins)
+        config_hash = self._hash_config(config_snapshot)
         
-        globals_data = {
-            'status': {
-                'success': total_errors == 0,
-                'matches': len(matches),
-                'tasks': 0,  # Will be updated by task executor
-                'errors': total_errors,
+        # Professional structure
+        response = {
+            # Execution metadata (indexed fields)
+            'execution': {
                 'started_at': start_time.isoformat(),
-                'finished_at': end_time.isoformat(),
-                'duration_ms': duration_ms
+                'finished_at': now.isoformat(),
+                'duration_ms': duration_ms,
+                'success': total_errors == 0
             },
-            'summary': summary
-        }
-        
-        # Add config snapshot if provided (wrapped in 'config')
-        if config:
-            globals_data['config'] = {
-                'options': config.get('options', {}),
-                'plugins': config.get('plugins', {}),
-                'tasks': config.get('tasks', [])
-            }
-        
-        self.debugger.info("response_builder", "API response built", 
-                          matches=len(matches), errors=total_errors, 
-                          categories=globals_data['summary']['categories'])
-        
-        return {
-            'globals': globals_data,
+            
+            # Aggregated summary (for quick stats)
+            'summary': {
+                'total_matches': len(matches),
+                'successful_matches': len(matches) - total_errors,
+                'failed_matches': total_errors,
+                'total_tasks_executed': total_tasks_executed,
+                'total_size_bytes': total_size_bytes,
+                'total_duration_seconds': round(total_duration_seconds, 2),
+                'enabled_plugins': list(config_snapshot.get('plugins', {}).keys())
+            },
+            
+            # Config reference (for reproducibility)
+            'config_hash': config_hash,
+            'config': config_snapshot,
+            
+            # Match results
             'matches': processed_matches
         }
+        
+        self.debugger.info("response_builder", "API response built", 
+                          matches=len(matches), errors=total_errors,
+                          duration_ms=duration_ms)
+        
+        return response
     
-    def _format_match(self, match: Dict[str, Any], index: int, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _format_match_flat(self, match: Dict[str, Any], index: int) -> Dict[str, Any]:
         """
-        Format a single match with corrected structure:
-        - match.globals.index, input, status
-        - match.globals.output (tasks, validations, paths) - to be filled later
-        - match.plugins.{plugin}.globals (status, validation only)
-        - match.plugins.{plugin}.{data} (plugin's own structure)
+        Format match with professional flat structure.
         
-        Note: NO match.options (duplicate), NO plugin.globals.options
+        Philosophy:
+        - Flat over nested (query performance)
+        - Status at top level (quick filtering)
+        - Plugin data directly accessible
+        - Minimal metadata overhead
+        
+        Structure:
+        {
+            "index": 0,
+            "input_path": "/path/file.mkv",
+            "success": true,
+            "executed_plugins": ["scanner", "ffprobe", "renamer", "tmdb"],
+            "failed_plugins": [],
+            "duration_ms": 2535,
+            "tasks": [{task_results}],  # Flat, no nesting
+            "scanner": {plugin_data},  # Direct access
+            "ffprobe": {plugin_data},
+            "renamer": {plugin_data},
+            "tmdb": {plugin_data}
+        }
         """
-        # Extract components
-        input_metadata = match.get('input', {'path': '', 'virtual': False})
-        match_status = match.get('status', {})
-        
-        # Separate plugins from metadata
-        raw_plugins = {}
-        for key, value in match.items():
-            if key not in ['input', 'status']:
-                raw_plugins[key] = value
-        
-        # Restructure plugins: move status/validation to plugin.globals
-        formatted_plugins = {}
-        for plugin_name, plugin_data in raw_plugins.items():
-            if not isinstance(plugin_data, dict):
-                formatted_plugins[plugin_name] = plugin_data
-                continue
-            
-            # Extract status and validation
-            plugin_status = plugin_data.get('status', {})
-            plugin_validation = plugin_data.get('validation', {})
-            
-            # Build plugin.globals (status + validation only, NO options)
-            plugin_globals = {
-                'status': plugin_status
-            }
-            if plugin_validation:
-                plugin_globals['validation'] = plugin_validation
-            
-            # Build formatted plugin (globals + plugin's own data)
-            formatted_plugin = {'globals': plugin_globals}
-            
-            # Add plugin's own data (everything except status/validation)
-            for key, value in plugin_data.items():
-                if key not in ['status', 'validation']:
-                    formatted_plugin[key] = value
-            
-            formatted_plugins[plugin_name] = formatted_plugin
-        
-        # Build match globals with simplified structure
-        # input_path: Just the path string (simplified)
+        # Extract metadata
+        input_metadata = match.get('input', {})
         input_path = input_metadata.get('path', '') if isinstance(input_metadata, dict) else input_metadata
         
-        match_globals = {
+        match_status = match.get('status', {})
+        success_plugins = match_status.get('success_plugins', [])
+        failed_plugins = match_status.get('failed_plugins', [])
+        not_supported = match_status.get('not_supported_plugins', [])
+        duration_ms = match_status.get('duration_ms', 0)
+        
+        # Build flat match structure
+        flat_match = {
+            # Top-level metadata (indexed)
             'index': index,
             'input_path': input_path,
-            'status': match_status,
-            'output': {
-                'tasks': []  # ONLY tasks (execution results)
-            }
+            'success': len(failed_plugins) == 0,
+            'executed_plugins': success_plugins,
+            'failed_plugins': failed_plugins,
+            'not_supported_plugins': not_supported,
+            'duration_ms': duration_ms,
+            
+            # Tasks array (flat)
+            'tasks': []  # Will be populated by task executor
         }
         
-        return {
-            'globals': match_globals,
-            'plugins': formatted_plugins
+        # Add plugin data directly (no 'plugins' wrapper)
+        for key, value in match.items():
+            if key not in ['input', 'status']:
+                if isinstance(value, dict):
+                    # Clean plugin data: remove nested 'globals' if exists
+                    cleaned_data = self._clean_plugin_data(value)
+                    flat_match[key] = cleaned_data
+                else:
+                    flat_match[key] = value
+        
+        return flat_match
+    
+    def _clean_plugin_data(self, plugin_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Clean plugin data: flatten status/validation into root.
+        
+        Old: {globals: {status: {...}, validation: {...}}, movie: {...}}
+        New: {status: {...}, validation: {...}, movie: {...}}
+        """
+        if 'globals' in plugin_data:
+            # Merge globals into root
+            globals_data = plugin_data.pop('globals')
+            plugin_data.update(globals_data)
+        
+        return plugin_data
+    
+    def _build_config_snapshot(self, config: Optional[Dict[str, Any]], loaded_plugins: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Build minimal config snapshot (only enabled plugins).
+        
+        Philosophy: Store only what's needed for reproducibility.
+        No full config dump - just enabled plugins and critical options.
+        """
+        if not config:
+            return {}
+        
+        # Only critical options
+        options = {
+            'dry_run': config.get('options', {}).get('dry_run', True),
+            'debug': config.get('options', {}).get('debug', False)
         }
+        
+        # Only enabled plugins (minimal config)
+        plugins = {}
+        for plugin_name, plugin_config in config.get('plugins', {}).items():
+            if plugin_config.get('enabled', False):
+                # Store only essential config (no sensitive data)
+                plugins[plugin_name] = {
+                    'enabled': True,
+                    'version': loaded_plugins.get(plugin_name, {}).get('version', '1.0.0')
+                }
+        
+        return {
+            'options': options,
+            'plugins': plugins
+        }
+    
+    def _hash_config(self, config: Dict[str, Any]) -> str:
+        """
+        Generate config hash for deduplication.
+        Same config = same hash = can reference instead of duplicate.
+        """
+        import hashlib
+        import json
+        
+        # Deterministic JSON (sorted keys)
+        config_str = json.dumps(config, sort_keys=True)
+        return hashlib.sha256(config_str.encode()).hexdigest()[:16]
     
     def _build_summary(
         self, 
